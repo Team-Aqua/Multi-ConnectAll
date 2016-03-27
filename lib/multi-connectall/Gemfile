@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+# Specify your gem's dependencies in ca.gemspec
+gem "minitest"
+gem "contracts"
+gem "gosu"
+gem 'celluloid-io'
+gem 'randexp'
+
+gemspec

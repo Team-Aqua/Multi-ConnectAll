@@ -32,6 +32,7 @@ class Server
 
     loop do
       data = socket.readpartial(4096)
+      puts data
       data = data.split('|')
       if data && !data.empty?
         begin

@@ -51,6 +51,7 @@ class Main < Gosu::Window
       end
 
       if data = @client.read_message
+        puts data
         data = data.split('|')
         if data && !data.empty?
           if data[0] == "waiting"
