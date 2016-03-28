@@ -32,7 +32,7 @@ class Server
 
     loop do
       data = socket.readpartial(4096)
-      puts "#{data}"
+      # puts "#{data}"
       data = data.split('|')
       if data && !data.empty?
         begin
@@ -66,19 +66,34 @@ class Server
                   end
                 end
               end
+            when 'wait'
+              if @players[user][1] != nil
+                game = @players[user][1]
+                response = ["game",
+                            @games[game][:player_1],
+                            @games[game][:player_2],
+                            @games[game][:player_1_score],
+                            @games[game][:player_2_score],
+                            @games[game][:tiles]].join('|')
+                socket.write(response)
+              else
+                response = "waiting"
+                socket.write(response)
+              end
             when 'win'
             when 'tie'
             when 'move'
-              move = data[2].to_i
+              puts "Data: #{data}"
+              move = data[2] #.to_i
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 color = "A"
               else
                 color = "B"
               end
-              entry = color + move.to_s
-              #if !@games[game][:tiles].include?("A" + move.to_s) && !@games[game][:tiles].include?("B" + move.to_s)
-              @games[game][:tiles] << entry
+              entry = color + "%" + move.to_s
+              if !@games[game][:tiles].include?("A" + move.to_s) && !@games[game][:tiles].include?("B" + move.to_s)
+                @games[game][:tiles] << entry
               # @games[game][:tiles] = entry
                 #score_update = check_squares(@games[game][:tiles])
                 #if color == "A"
@@ -87,16 +102,17 @@ class Server
                 #  @games[game][:blue_score] += score_update
                 #end
               # end
-              response = ["game",
-                @games[game][:player_1],
-                @games[game][:player_2],
-                @games[game][:player_1_score],
-                @games[game][:player_2_score],
-                @games[game][:tiles]].join('|')
-              puts "Move Response: #{response}"
-              #socket.write(response)
+                response = ["game",
+                  @games[game][:player_1],
+                  @games[game][:player_2],
+                  @games[game][:player_1_score],
+                  @games[game][:player_2_score],
+                  @games[game][:tiles]].join('|')
+                puts "Move Response: #{response}"
+                socket.write(response)
+              end
             else
-              puts "#{data[0]}"
+              puts "Unknown: #{data[0]}"
           end
         rescue
       end

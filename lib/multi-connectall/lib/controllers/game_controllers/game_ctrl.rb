@@ -74,16 +74,104 @@ module Controllers
               check_winner_winner;  
               @view::control.disable_control_on_AI;
               @game_state_model.toggle_player_turn_state;
-
               # Server interaction
-              @window.client.send_message(['move',@game_state_model::player_role,x].join('|'))
-
+              # puts "Height: #{@game_state_model::grid.column_depth(x)}"
+              @window.client.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
               @view::control.check_available; 
               @player_moved = false; 
               }
             }
         end
       end
+      begin
+      @window.client.send_message('wait')
+      if data = @window.client.read_message ## maybe put interaction somewhere else
+        #puts "Data Read: #{data}"
+        data = data.split('|')
+        if data && !data.empty?
+          if data[0] == "game"
+            position = data.last
+            # puts "Position: #{position} |||"
+            position = position.split('%')
+            # first el: A/B , second el: X , third el: Y
+            # puts position
+            puts "val: #{position[0]} || #{game_state_model::player_role} || #{position[1]}"
+            if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
+              ypos = @game_state_model::grid.column_depth(position[1].to_i)
+              puts "val: #{ypos} || relative position: #{position[2]}"
+              if ypos > position[2].to_i and @player_moved == false
+                @player_moved = true;
+                xpos = position[1].to_i
+                @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
+                @player_moved = @game_state_model::players[@game_state_model::player_turn_state].make_move{ |xpos, player_num, player_color, delay|
+                  @view::control.disable_control_on_player
+                  @view::grid.animate_tile_drop(xpos, player_color, delay) {
+                    @view::control.enable_control_on_player
+                    @game_state_model::grid.add_tile(xpos, player_num);
+                    check_winner_winner;  
+                    @view::control.disable_control_on_AI;
+                    @game_state_model.toggle_player_turn_state;
+                    # Server interaction
+                    # puts "Height: #{@game_state_model::grid.column_depth(x)}"
+                    @view::control.check_available; 
+                    @player_moved = false; 
+                    }
+                  }
+              end 
+            end
+          end
+        end
+      end
+      rescue
+      end
+            # puts data
+            # data = data.split('|')
+            # if data && !data.empty?
+            #   if data[0] == "waiting"
+            #     @state = :waiting
+            #     @orange = "Player 1"
+            #     @blue = "Player 2"
+            #     @orange_score = 0
+            #     @blue_score = 0
+            #     @move = false
+            #     @turn = false
+            #     @board.tiles = []
+            #     @board.square_animations = []
+            #   elsif data[0] == "game"
+            #     if @state != :gameover
+            #       @state = :running
+            #       @orange = data[1]
+            #       @blue = data[2]
+            #       @orange_score = data[3]
+            #       @blue_score = data[4]
+            #       if !data[5].nil?
+            #         @board.tiles = []
+            #         data[5..-1].each do |tile|
+            #           @board.tiles << tile
+            #         end
+            #       end
+            #     end
+            #     if (@orange_score.to_i >= 150 || @blue_score.to_i >= 150) &&
+            #        (@orange_score.to_i - @blue_score.to_i).abs > 15
+            #       @turn = false
+            #       @state = :gameover
+            #       if @timer == nil
+            #         @timer = Timer.new
+            #       else
+            #         @timer.update
+            #         if @timer.seconds > 15
+            #           close
+            #         end
+            #       end
+            #     else
+            #       if (@board.tiles.size % 2 == 0 && @orange == NAME) || (@board.tiles.size % 2 != 0 && @blue == NAME)
+            #         @turn = true
+            #       else
+            #         @turn = false
+            #       end
+            #     end
+            #   end
+            # end
     end
 
     ##
