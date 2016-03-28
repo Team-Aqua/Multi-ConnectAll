@@ -23,6 +23,10 @@ module Controllers
 
       @player_moved = false
       @data_loaded = false
+      @skip_run = false
+      @skip_pos = 0
+      @concede_run = false
+      @concede_pos = 0
 
       GameControllerContracts.invariant(self)
     end
