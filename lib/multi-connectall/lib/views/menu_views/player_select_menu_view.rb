@@ -109,7 +109,7 @@ module Views
         # @name_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), -500, -500, 100, lambda { color_swap })
         @header_ai_difficulty = Gosu::Image.new("assets/images/btn_ai_difficulty.png", :tileable => false)
         @ai_bg = Gosu::Image.new("assets/images/bg_ai.png", :tileable => false)
-        @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player1_name: @text_fields[0].get_text, ai_level: @ai_level)}, Gosu::Image.new("assets/images/btn_start_click.png"))
+        @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player_name: @text_fields[0].get_text, ai_level: @ai_level)}, Gosu::Image.new("assets/images/btn_start_click.png"))
 
 
         @ai_grid << button1_ai

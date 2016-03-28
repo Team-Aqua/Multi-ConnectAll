@@ -14,7 +14,12 @@ module Controllers
       @menu_click_sound = Gosu::Sample.new(@window, "assets/sounds/menu_click.mp3")
       @win_sound = Gosu::Sample.new(@window, "assets/sounds/cheer_win.mp3")
       
-      @alert_view = Views::WaitingAlertView.new(@window, self)
+      # puts "#{@game_state_model::game_mode}"
+      if @game_state_model::game_mode != :pvai
+        @alert_view = Views::WaitingAlertView.new(@window, self)
+      else
+        @alert_view = nil
+      end
 
       @player_moved = false
       @data_loaded = false
@@ -73,11 +78,13 @@ module Controllers
           move_block
         end
       end
-      toggle_multiplayer_controls
-      begin
-      send_sync_message
-      read_message
-      rescue
+      if @game_state_model::game_mode != :pvai
+        toggle_multiplayer_controls
+        begin
+        send_sync_message
+        read_message
+        rescue
+        end
       end
     end
 

@@ -77,7 +77,7 @@ module Controllers
     # Outputs: none
 
     def pvai_button_click
-      @game_state_model::game_type = :pvai
+      @game_state_model::game_mode = :pvai
       @window.start_game
     end
 
