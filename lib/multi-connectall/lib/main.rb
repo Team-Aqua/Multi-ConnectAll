@@ -81,7 +81,7 @@ class GameWindow < Gosu::Window
     self.caption = "ConnectAll"
     @song = Gosu::Song.new(self, "assets/music/bitbop.mp3")
     @song.volume = 0.2
-    @song.play(true)
+    #@song.play(true)
 
     # Dev server interaction
     if model != nil
@@ -89,15 +89,7 @@ class GameWindow < Gosu::Window
     else
       @game_state_model = Models::GameStateModel.new
     end
-    
-    # Dev testing multiplayer integration
-    # @game_state_model = Models::GameStateModel.new
-    # @game_state_model::game_type = :classic
-    # @game_state_model::game_mode = :pvp
-    # @game_state_model::players = [Models::RealPlayer.new(1, :green, "Q"), Models::RealPlayer.new(2, :black, "A")]
-    # @game_state_model::num_of_rl_players = 2
-    # @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
-    
+ 
     @controllers = {  :menu => Controllers::MenuCtrl.new(self, @game_state_model),
                       :game => Controllers::GameCtrl.new(self, @game_state_model) }
     #disabled for testing
@@ -162,19 +154,19 @@ class GameWindow < Gosu::Window
     initialize(568, 343, model: @game_state_model)
 
     @client = Client.new(SERVER, PORT)
-    #puts @game_state_model::players[0]::name
     @client.send_message("join")
-    #sleep 2
     data = @client.read_message
-    #puts "testing"
-    #data = "setup|0"
     data = data.split('|')
     if data && !data.empty?
       if data[0] == "setup"
         if data[1] == "0"
           @client.send_message(['setup', @game_state_model::players[0]::name, @game_state_model::players[0].player_color].join('|'))
+          #puts "#{['setup', @game_state_model::players[0]::name, @game_state_model::players[0].player_color].join('|')}"
+          @game_state_model::player_role = 0
         else 
           @client.send_message(['setup', @game_state_model::players[1]::name, @game_state_model::players[1].player_color].join('|'))
+          #puts "#{['setup', @game_state_model::players[1]::name, @game_state_model::players[1].player_color].join('|')}"
+          @game_state_model::player_role = 1
         end
       end
     end

@@ -76,7 +76,7 @@ module Controllers
               @game_state_model.toggle_player_turn_state;
 
               # Server interaction
-              @window.client.send_message(['move', x].join('|'))
+              @window.client.send_message(['move',@game_state_model::player_role,x].join('|'))
 
               @view::control.check_available; 
               @player_moved = false; 
@@ -99,13 +99,14 @@ module Controllers
         @game_won = true
         @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::winner].player_color)
         @game_state_model::players[@game_state_model::winner].increment_win_score
-
+        @window.client.send_message(['win', @game_state_model::player_role].join('|'))
         
       end  
       if @game_state_model::state == :tie
         @win_sound.play(0.7, 1, false)
         @game_won = true
         @alert_view = Views::WinAlertView.new(@window, self, 'tie')
+        @window.client.send_message('tie')
       end 
     end
 

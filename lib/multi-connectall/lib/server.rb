@@ -37,29 +37,44 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
-          when 'join'
-            puts "writing"
-            socket.write("setup|0")
-          when 'setup'
-            @players[user] = [data[1], nil]
-            if @players.size % 2 == 0
-              @players.each do |player, data|
-              if player != user && data[1] == nil
-                #@games[@count] = { orange: data[0],
-                #                   blue: @players[user][0],
-                #                   orange_score: 0,
-                #                   blue_score: 0,
-                #                   tiles: [] }
-                @players[player][1] = @count
-                @players[user][1] = @count
-                @count += 1
+            when 'join'
+              puts "writing : #{@players.size % 2}"
+              socket.write("setup|#{@players.size % 2}")
+            when 'setup'
+              @players[user] = [data[1], nil]
+              puts "playersize: #{@players[user]}"
+              if @players.size % 2 == 0
+                @players.each do |player, data|
+                  puts "#{player} || #{data}"
+                  if player != user && data[1] == nil
+                    puts "hey"
+                    @games[@count] = { player_1: data[0],
+                                       player_2: @players[user][0],
+                                       player_1_score: 0,
+                                       player_2_score: 0,
+                                       tiles: [] }
+                    @players[player][1] = @count
+                    @players[user][1] = @count
+                    @count += 1
+                    game = @players[user][1]
+                    response = ["game",
+                                @games[game][:player_1],
+                                @games[game][:player_2],
+                                @games[game][:player_1_score],
+                                @games[game][:player_2_score],
+                                @games[game][:tiles]].join('|')
+                    puts "Response: #{response}"
+                  end
                 end
               end
-            end
+            when 'win'
+            when 'tie'
+            else
+              puts "#{data[0]}"
           end
         rescue
-        end
       end
+    end
 
       # if data && !data.empty?
       #   begin
