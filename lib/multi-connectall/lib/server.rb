@@ -38,14 +38,15 @@ class Server
         begin
           case data[0]
             when 'join'
-              puts "writing : #{@players.size % 2}"
+              # puts "writing : #{@players.size % 2}"
               socket.write("setup|#{@players.size % 2}")
+              @players[user] = ["Temp", nil, "green"]
             when 'setup'
               @players[user] = [data[1], nil, data[2]]
-              puts "playersize: #{@players[user]}, data: #{data[2]}"
+              # puts "playersize: #{@players.size}, player: #{@players[user]}, data: #{data[2]}"
               if @players.size % 2 == 0
                 @players.each do |player, data|
-                  puts "#{player} || #{data}"
+                  # puts "#{player} || #{data}"
                   if player != user && data[1] == nil
                     @games[@count] = { player_1: data[0],
                                        player_2: @players[user][0],
@@ -69,6 +70,8 @@ class Server
                     socket.write(response)
                   end
                 end
+              else
+                socket.write("waiting")
               end
             when 'load'
               if @players[user][1] != nil

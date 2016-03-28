@@ -68,12 +68,18 @@ module Controllers
     # Inputs: player 1 color, player 2 color, player 1 name, player 2 game
     # Outputs: none
 
-    def player_rdy(color, player2_color: nil, player1_name: "Player 1", player2_name: "Player 2", ai_level:nil)
+    def player_rdy(color, player2_color: :black, player_name: "Player 1", player2_name: "Player 2", ai_level: nil, role: 0)
       MenuControllerContracts.invariant(self)
-      @game_state_model::players.push(Models::RealPlayer.new(1, color, player1_name))
-      if player2_color != nil
-        @game_state_model::players.push(Models::RealPlayer.new(2, player2_color, player2_name))
+      if ai_level == nil
+        if role == 0
+          @game_state_model::players.push(Models::RealPlayer.new(1, color, player_name))
+          @game_state_model::players.push(Models::RealPlayer.new(2, 'black', player2_name))
+        elsif role == 1
+          @game_state_model::players.push(Models::RealPlayer.new(1, 'green', player2_name))
+          @game_state_model::players.push(Models::RealPlayer.new(2, color, player_name))
+        end
       else
+        @game_state_model::players.push(Models::RealPlayer.new(1, color, player_name))
         if @game_state_model::game_type == :classic
           @game_state_model::players.push(Models::AIPlayer.new(2, 'black', GameLogic::ClassicAI.new(@game_state_model, ai_level), "Roboto"))
         else

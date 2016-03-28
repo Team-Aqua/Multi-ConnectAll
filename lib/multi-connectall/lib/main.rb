@@ -94,7 +94,10 @@ class GameWindow < Gosu::Window
                       :game => Controllers::GameCtrl.new(self, @game_state_model) }
     #disabled for testing
     @currentCtrl = @controllers[:menu]
-    #@currentCtrl = @controllers[:game]
+
+    if @client == nil
+      @client = Client.new(SERVER, PORT)
+    end
 
     @fps_init = Time.now.to_f
     @fps_counter = 0
@@ -149,29 +152,12 @@ class GameWindow < Gosu::Window
 
     # Dev server interaction
     # FIXME: Shift this to 'login to server' interaction
-
+    # 
+    @client.send_message(['setup', @game_state_model::players[@game_state_model::player_role]::name, @game_state_model::players[@game_state_model::player_role].player_color].join('|'))
     @controllers[:game]::view::grid.set_tiles
     initialize(568, 343, model: @game_state_model)
-
-    @client = Client.new(SERVER, PORT)
-    @client.send_message("join")
-    data = @client.read_message
-    data = data.split('|')
-    if data && !data.empty?
-      if data[0] == "setup"
-        if data[1] == "0"
-          @client.send_message(['setup', @game_state_model::players[0]::name, @game_state_model::players[0].player_color].join('|'))
-          #puts "#{['setup', @game_state_model::players[0]::name, @game_state_model::players[0].player_color].join('|')}"
-          @game_state_model::player_role = 0
-        else 
-          @client.send_message(['setup', @game_state_model::players[1]::name, @game_state_model::players[1].player_color].join('|'))
-          #puts "#{['setup', @game_state_model::players[1]::name, @game_state_model::players[1].player_color].join('|')}"
-          @game_state_model::player_role = 1
-        end
-      end
-    end
-
     @currentCtrl = @controllers[:game]
+
   end
 
   ##

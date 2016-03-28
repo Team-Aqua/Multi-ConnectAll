@@ -5,6 +5,11 @@ module Views
     ##
     # PlayerMenuView lets users select names and colours before playing.
     # Selected after PvAI/P1vP2 selection
+    
+    ##
+    # Multiplayer functionality: on load,
+    # this page sets up the multiplayer
+    # Dev: needs to be able to 'drop' player if they exit this screen
 
     def initialize(window, controller, game_state_model)
       @window = window
@@ -34,16 +39,16 @@ module Views
         'green' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_green_name.png"), (@window.width/2)-(@button_width/2) - 125, 185, 100, lambda { color_swap })
       }
       @player2_buttons = {
-        'yellow' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_yellow.png"), (@window.width/2)-(@button_width/2) - 125, 225, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_yellow_click.png")),
-        'teal' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_teal.png"), (@window.width/2)-(@button_width/2) - 125, 225, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_teal_click.png")),
-        'black' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_black.png"), (@window.width/2)-(@button_width/2) - 125, 225, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_black_click.png")),
-        'purple' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_purple.png"), (@window.width/2)-(@button_width/2) - 125, 225, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_purple_click.png"))
+        'yellow' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_yellow.png"), (@window.width/2)-(@button_width/2) - 125, 115, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_yellow_click.png")),
+        'teal' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_teal.png"), (@window.width/2)-(@button_width/2) - 125, 115, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_teal_click.png")),
+        'black' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_black.png"), (@window.width/2)-(@button_width/2) - 125, 115, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_black_click.png")),
+        'purple' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_nocolon_purple.png"), (@window.width/2)-(@button_width/2) - 125, 115, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_nocolon_purple_click.png"))
       }
       @player2_name = {
-        'yellow' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_yellow_name.png"), (@window.width/2)-(@button_width/2) - 125, 295, 100, lambda { color_swap }),
-        'teal' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_teal_name.png"), (@window.width/2)-(@button_width/2) - 125, 295, 100, lambda { color_swap }),
-        'black' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), (@window.width/2)-(@button_width/2) - 125, 295, 100, lambda { color_swap }),
-        'purple' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_purple_name.png"), (@window.width/2)-(@button_width/2) - 125, 295, 100, lambda { color_swap })
+        'yellow' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_yellow_name.png"), (@window.width/2)-(@button_width/2) - 125, 185, 100, lambda { color2_swap }),
+        'teal' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_teal_name.png"), (@window.width/2)-(@button_width/2) - 125, 185, 100, lambda { color2_swap }),
+        'black' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), (@window.width/2)-(@button_width/2) - 125, 185, 100, lambda { color2_swap }),
+        'purple' => BtnItem.new(@window, Gosu::Image.new("assets/images/input_purple_name.png"), (@window.width/2)-(@button_width/2) - 125, 185, 100, lambda { color2_swap })
       }
 
       @ai_grid = Array.new
@@ -68,22 +73,40 @@ module Views
       button8_ai_empty = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_ai_8_empty.png", :tileable => true), 277.5, 280, 35, lambda { set_ai(7) }, Gosu::Image.new("assets/images/btn_ai_8_clicked.png", false))
 
       @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.return_to_mode_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
+      @window.client.send_message("join")
+
+      data = @window.client.read_message
+      data = data.split('|')
+      if data && !data.empty?
+        if data[0] == "setup"
+          if data[1] == "0"
+            @game_state_model::player_role = 0
+          else 
+            @game_state_model::player_role = 1
+          end
+        end
+      end
 
       if (@game_state_model::game_mode == :pvp)
-        @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
-        @button_player2 = @player2_buttons[@color2_selection_wheel[@color2_selection]]
-        @name_player = @player_name[@color_selection_wheel[@color_selection]]
-        @name_player2 = @player2_name[@color2_selection_wheel[@color2_selection]]
-        @text_fields = Array.new(2) { |index| TextField.new(@window, @font, 113, 175 + index * 110, "Player #{index + 1}") }
-        @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player2_color: @color2_selection_wheel[@color2_selection], player1_name: @text_fields[0].get_text, player2_name: @text_fields[1].get_text) }, Gosu::Image.new("assets/images/btn_start_click.png"))  
-
+        if @game_state_model::player_role == 0
+          @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
+          @name_player = @player_name[@color_selection_wheel[@color_selection]]
+          @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player_name: @text_fields[0].get_text, role: 0) }, Gosu::Image.new("assets/images/btn_start_click.png"))  
+        elsif @game_state_model::player_role == 1
+          @button_player = @player2_buttons[@color2_selection_wheel[@color2_selection]]
+          @name_player = @player2_name[@color2_selection_wheel[@color2_selection]]
+          @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color2_selection_wheel[@color2_selection], player_name: @text_fields[0].get_text, role: 1) }, Gosu::Image.new("assets/images/btn_start_click.png"))  
+        end
+        # @button_player2 = @player2_buttons[@color2_selection_wheel[@color2_selection]]
+        # @name_player2 = @player2_name[@color2_selection_wheel[@color2_selection]]
+        @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175 + index * 110, "ID") }
       else
         @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
         @name_player = @player_name[@color_selection_wheel[@color_selection]]
         #Added to reduce logic complexity in draw and update. SHould be out of view tho
         @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175, "Player #{index + 1}") }
-        @button_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_black.png"), -500, -500, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_black_click.png"))        
-        @name_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), -500, -500, 100, lambda { color_swap })
+        # @button_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_black.png"), -500, -500, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_black_click.png"))        
+        # @name_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), -500, -500, 100, lambda { color_swap })
         @header_ai_difficulty = Gosu::Image.new("assets/images/btn_ai_difficulty.png", :tileable => false)
         @ai_bg = Gosu::Image.new("assets/images/bg_ai.png", :tileable => false)
         @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player1_name: @text_fields[0].get_text, ai_level: @ai_level)}, Gosu::Image.new("assets/images/btn_start_click.png"))
@@ -159,8 +182,8 @@ module Views
 
     def color2_swap
       @color2_selection = (@color2_selection + 1) % @color2_selection_wheel.count
-      @button_player2 = @player2_buttons[@color2_selection_wheel[@color2_selection]]
-      @name_player2 = @player2_name[@color2_selection_wheel[@color2_selection]]
+      @button_player = @player2_buttons[@color2_selection_wheel[@color2_selection]]
+      @name_player = @player2_name[@color2_selection_wheel[@color2_selection]]
     end
 
     ##
@@ -180,9 +203,9 @@ module Views
         end
       end
       @button_player.draw
-      @button_player2.draw
+      # @button_player2.draw
       @name_player.draw
-      @name_player2.draw
+      # @name_player2.draw
       @button_rdy.draw
       @button_return.draw
       @text_fields.each { |tf| tf.draw }
@@ -195,7 +218,7 @@ module Views
 
     def update
       @button_player.update
-      @button_player2.update
+      # @button_player2.update
       @button_rdy.update
       @button_return.update
       if (@game_state_model::game_mode != :pvp)
@@ -212,7 +235,7 @@ module Views
     def clicked
       @menu_click_sound.play
       @button_player.clicked
-      @button_player2.clicked
+      # @button_player2.clicked
       @button_rdy.clicked
       @button_return.clicked
       if (@game_state_model::game_mode != :pvp)

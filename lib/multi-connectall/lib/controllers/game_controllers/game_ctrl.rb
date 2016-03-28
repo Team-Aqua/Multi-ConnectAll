@@ -129,7 +129,7 @@ module Controllers
     # 'load' - new game logic - loads other player info
 
     def read_message
-      if data = @window.client.read_message ## maybe put interaction somewhere else
+      if data = @window.client.read_message ## IMPORTANT: blocks until message is received
         # puts "Data Read: #{data}"
         data = data.split('|')
         if data && !data.empty?
