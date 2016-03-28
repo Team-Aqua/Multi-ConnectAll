@@ -47,7 +47,6 @@ class Server
                 @players.each do |player, data|
                   puts "#{player} || #{data}"
                   if player != user && data[1] == nil
-                    puts "hey"
                     @games[@count] = { player_1: data[0],
                                        player_2: @players[user][0],
                                        player_1_score: 0,
@@ -69,6 +68,33 @@ class Server
               end
             when 'win'
             when 'tie'
+            when 'move'
+              move = data[2].to_i
+              game = @players[user][1]
+              if @games[game][:player_1] == @players[user][0]
+                color = "A"
+              else
+                color = "B"
+              end
+              entry = color + move.to_s
+              #if !@games[game][:tiles].include?("A" + move.to_s) && !@games[game][:tiles].include?("B" + move.to_s)
+              @games[game][:tiles] << entry
+              # @games[game][:tiles] = entry
+                #score_update = check_squares(@games[game][:tiles])
+                #if color == "A"
+                #  @games[game][:orange_score] += score_update
+                #else
+                #  @games[game][:blue_score] += score_update
+                #end
+              # end
+              response = ["game",
+                @games[game][:player_1],
+                @games[game][:player_2],
+                @games[game][:player_1_score],
+                @games[game][:player_2_score],
+                @games[game][:tiles]].join('|')
+              puts "Move Response: #{response}"
+              #socket.write(response)
             else
               puts "#{data[0]}"
           end
