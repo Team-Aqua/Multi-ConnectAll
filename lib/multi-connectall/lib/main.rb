@@ -50,7 +50,7 @@ require_relative 'views/alert_popup/otto_instructions_view'
 require_relative 'views/alert_popup/connect_all_view'
 require_relative 'views/alert_popup/help_view'
 require_relative 'views/alert_popup/win_view'
-
+require_relative 'views/alert_popup/waiting_alert_view'
 
 require_relative 'ancillaries/m_contract_error'
 require_relative 'contracts/AI_contracts'

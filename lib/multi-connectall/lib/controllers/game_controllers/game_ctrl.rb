@@ -1,6 +1,6 @@
 module Controllers
   class GameCtrl
-    attr_accessor :view, :window, :game_state_model, :alert_view, :state
+    attr_accessor :view, :window, :game_state_model, :alert_view, :state, :data_loaded
 
     ## 
     # Main controller for game interactions
@@ -13,8 +13,12 @@ module Controllers
       @view = Views::GameView.new(@window, self, @game_state_model)
       @menu_click_sound = Gosu::Sample.new(@window, "assets/sounds/menu_click.mp3")
       @win_sound = Gosu::Sample.new(@window, "assets/sounds/cheer_win.mp3")
-      @alert_view = nil
+      
+      @alert_view = Views::WaitingAlertView.new(@window, self)
+
       @player_moved = false
+      @data_loaded = false
+
       GameControllerContracts.invariant(self)
     end
 
@@ -66,66 +70,112 @@ module Controllers
         @alert_view.update
       else
         if @player_moved == false
-          @player_moved = @game_state_model::players[@game_state_model::player_turn_state].make_move{ |x, player_num, player_color, delay|
-            @view::control.disable_control_on_player
-            @view::grid.animate_tile_drop(x, player_color, delay) {
-              @view::control.enable_control_on_player
-              @game_state_model::grid.add_tile(x, player_num);
-              check_winner_winner;  
-              @view::control.disable_control_on_AI;
-              @game_state_model.toggle_player_turn_state;
-              # Server interaction
-              # puts "Height: #{@game_state_model::grid.column_depth(x)}"
-              @window.client.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
-              @view::control.check_available; 
-              @player_moved = false; 
-              }
-            }
+          move_block
         end
       end
-      if (@game_state_model::player_turn_state != @game_state_model::player_role) and (@view::control.control_disabled == false)
-        @view::control.disable_control_on_player
-      elsif (@game_state_model::player_turn_state == @game_state_model::player_role) and (@view::control.control_disabled == true)
-        @view::control.enable_control_on_player
-      end
+      toggle_multiplayer_controls
       begin
-      @window.client.send_message('wait')
+      send_sync_message
+      read_message
+      rescue
+      end
+    end
+
+    ##
+    # Logic for placing block
+    # Refactored for multiplayer functionality
+
+    def move_block
+      @player_moved = @game_state_model::players[@game_state_model::player_turn_state].make_move{ |x, player_num, player_color, delay|
+        @view::control.disable_control_on_player
+        @view::grid.animate_tile_drop(x, player_color, delay) {
+          @view::control.enable_control_on_player
+          @game_state_model::grid.add_tile(x, player_num);
+          check_winner_winner;  
+          @view::control.disable_control_on_AI;
+          @game_state_model.toggle_player_turn_state;
+          @window.client.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
+          @view::control.check_available; 
+          @player_moved = false; 
+          }
+        }
+    end
+
+    ## 
+    # Sends signal to server depending on what is required
+    # For initial sync - load is required
+    # For in-game - wait is required
+
+    def send_sync_message
+      if @data_loaded == false 
+        write_message('load')
+      else
+        write_message('wait')
+      end
+    end
+
+    ##
+    # Generic write signal
+    # Used for sending messages to server
+    
+    def write_message(message)
+      @window.client.send_message(message)
+    end
+
+    ##
+    # Reads server message
+    # Possible states:
+    # 'game' - standard game logic - either new move or old move placed.
+    # 'load' - new game logic - loads other player info
+
+    def read_message
       if data = @window.client.read_message ## maybe put interaction somewhere else
-        #puts "Data Read: #{data}"
+        # puts "Data Read: #{data}"
         data = data.split('|')
         if data && !data.empty?
           if data[0] == "game"
             position = data.last
             # puts "Position: #{position} |||"
             position = position.split('%')
-            # first el: A/B , second el: X , third el: Y
-            # puts position
-            # puts "val: #{position[0]} || #{game_state_model::player_role} || #{position[1]}"
-            if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
+            if position[0] == 'S' and ((position[1] == 'A' and @game_state_model::player_role == 1) or (position[1] == 'B' and @game_state_model::player_role == 0))
+              skip_logic
+            elsif position[0] == 'C' and ((position[1] == 'A' and @game_state_model::player_role == 1) or (position[1] == 'B' and @game_state_model::player_role == 0))
+              concede_logic
+            elsif (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
               ypos = @game_state_model::grid.column_depth(position[1].to_i)
               # puts "val: #{ypos} || relative position: #{position[2]}"
               if ypos > position[2].to_i and @player_moved == false
                 @player_moved = true;
                 xpos = position[1].to_i
                 @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
-                @player_moved = @game_state_model::players[@game_state_model::player_turn_state].make_move{ |xpos, player_num, player_color, delay|
-                  @view::control.disable_control_on_player
-                  @view::grid.animate_tile_drop(xpos, player_color, delay) {
-                    @view::control.enable_control_on_player
-                    @game_state_model::grid.add_tile(xpos, player_num);
-                    check_winner_winner;  
-                    @view::control.disable_control_on_AI;
-                    @game_state_model.toggle_player_turn_state;
-                    @view::control.check_available; 
-                    @player_moved = false; 
-                    }
-                  }
+                move_block
               end 
+            end
+          elsif data[0] == "load"
+            @data_loaded = true
+            @alert_view = nil
+            if @game_state_model::player_role == 0
+              @game_state_model::players[1]::name = data[2]
+              @game_state_model::players[1]::player_color = data[4] 
+              @game_state_model::players[1]::score = data[6].to_i
+            elsif @game_state_model::player_role == 1
+              @game_state_model::players[0]::name = data[1]
+              @game_state_model::players[0]::player_color = data[3] 
+              @game_state_model::players[0]::score = data[5].to_i
             end
           end
         end
       end
-      rescue
+    end
+
+    ##
+    # Sets multiplayer functions depending on whose turn it is
+
+    def toggle_multiplayer_controls
+      if (@game_state_model::player_turn_state != @game_state_model::player_role) and (@view::control.control_disabled == false)
+        @view::control.disable_control_on_player
+      elsif (@game_state_model::player_turn_state == @game_state_model::player_role) and (@view::control.control_disabled == true)
+        @view::control.enable_control_on_player
       end
     end
 
@@ -142,8 +192,7 @@ module Controllers
         @game_won = true
         @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::winner].player_color)
         @game_state_model::players[@game_state_model::winner].increment_win_score
-        @window.client.send_message(['win', @game_state_model::player_role].join('|'))
-        
+        @window.client.send_message(['win', @game_state_model::player_role].join('|'))  
       end  
       if @game_state_model::state == :tie
         @win_sound.play(0.7, 1, false)
@@ -203,10 +252,15 @@ module Controllers
     def skip_button_click
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
-        @game_state_model.toggle_player_turn_state
+        skip_logic
+        write_message('skip')
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
+    end      
+
+    def skip_logic
+      @game_state_model.toggle_player_turn_state
     end
 
     ##
@@ -219,13 +273,18 @@ module Controllers
     def concede_button_click
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
-        @game_won = true
-        @game_state_model.toggle_player_turn_state
-        @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::player_turn_state].player_color)
-        @game_state_model::players[@game_state_model::player_turn_state].increment_win_score
+        concede_logic
+        write_message('concede')
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
+    end
+
+    def concede_logic
+      @game_won = true
+      @game_state_model.toggle_player_turn_state
+      @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::player_turn_state].player_color)
+      @game_state_model::players[@game_state_model::player_turn_state].increment_win_score
     end
 
     ##
