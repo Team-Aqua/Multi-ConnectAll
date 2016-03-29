@@ -130,6 +130,7 @@ class Server
             when 'move'
               move = data[2] #.to_i
               game = @players[user][1]
+              puts "game: #{@players[user][0]}"
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
               else

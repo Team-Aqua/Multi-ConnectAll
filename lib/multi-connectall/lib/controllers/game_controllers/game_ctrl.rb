@@ -96,7 +96,7 @@ module Controllers
     # Logic for placing block
     # Refactored for multiplayer functionality
 
-    def move_block
+    def move_block(self_proc = false)
       @player_moved = @game_state_model::players[@game_state_model::player_turn_state].make_move{ |x, player_num, player_color, delay|
         @view::control.disable_control_on_player
         @view::grid.animate_tile_drop(x, player_color, delay) {
@@ -105,8 +105,10 @@ module Controllers
           check_winner_winner;  
           @view::control.disable_control_on_AI;
           @game_state_model.toggle_player_turn_state;
-          @window.client.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
           @view::control.check_available; 
+          if self_proc == false
+            @window.client.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
+          end
           @player_moved = false; 
           }
         }
@@ -146,7 +148,7 @@ module Controllers
         if data && !data.empty?
           if data[0] == "game"
             position = data.last
-            # puts "Position: #{position} |||"
+            puts "Position: #{position} |||"
             position = position.split('%')
             if position[0] == 'S' and ((position[1] == 'A' and @game_state_model::player_role == 1) or (position[1] == 'B' and @game_state_model::player_role == 0))
               skip_logic
@@ -159,7 +161,7 @@ module Controllers
                 @player_moved = true;
                 xpos = position[1].to_i
                 @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
-                move_block
+                move_block(self_proc: true)
               end 
             end
           elsif data[0] == "load"
