@@ -108,6 +108,7 @@ class Server
             when 'win'
             when 'tie'
             when 'skip'
+              # data[1] holds player_role
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
@@ -118,6 +119,7 @@ class Server
               # instantiate_game_action(entry, game, socket)
               # instantiate_game_action("CLR", game, socket)
             when 'concede'
+              # data[1] holds player_role
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"

@@ -266,7 +266,7 @@ module Controllers
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
         skip_logic
-        write_message('skip')
+        write_message(['skip', @game_state_model::player_role].join('|'))
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
@@ -287,7 +287,7 @@ module Controllers
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
         concede_logic
-        write_message('concede')
+        write_message(['concede', @game_state_model::player_role].join('|'))
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
