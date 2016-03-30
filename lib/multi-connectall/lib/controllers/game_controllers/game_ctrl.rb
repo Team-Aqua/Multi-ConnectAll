@@ -143,26 +143,30 @@ module Controllers
 
     def read_message
       if data = @window.client.read_message ## IMPORTANT: blocks until message is received
-        # puts "Data Read: #{data}"
+        puts "Data Read: #{data}"
         data = data.split('|')
         if data && !data.empty?
           if data[0] == "game"
             position = data.last
             puts "Position: #{position} |||"
             position = position.split('%')
-            if position[0] == 'S' and ((position[1] == 'A' and @game_state_model::player_role == 1) or (position[1] == 'B' and @game_state_model::player_role == 0))
-              skip_logic
-            elsif position[0] == 'C' and ((position[1] == 'A' and @game_state_model::player_role == 1) or (position[1] == 'B' and @game_state_model::player_role == 0))
-              concede_logic
-            elsif (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
-              ypos = @game_state_model::grid.column_depth(position[1].to_i)
-              # puts "val: #{ypos} || relative position: #{position[2]}"
-              if ypos > position[2].to_i and @player_moved == false
-                @player_moved = true;
-                xpos = position[1].to_i
-                @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
-                move_block(self_proc: true)
-              end 
+            if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
+              if position[1] == 'S' and ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0))
+                puts "judge"
+                skip_logic
+              elsif position[1] == 'C' and ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0))
+                puts "jury"
+                concede_logic
+              else
+                ypos = @game_state_model::grid.column_depth(position[1].to_i)
+                # puts "val: #{ypos} || relative position: #{position[2]}"
+                if ypos > position[2].to_i and @player_moved == false
+                  @player_moved = true;
+                  xpos = position[1].to_i
+                  @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
+                  move_block(self_proc: true)
+                end 
+              end
             end
           elsif data[0] == "load"
             @data_loaded = true

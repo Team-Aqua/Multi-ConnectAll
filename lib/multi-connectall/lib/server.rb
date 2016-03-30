@@ -115,7 +115,11 @@ class Server
               else
                 role = "B"
               end
-              entry = "S" + "%" + role
+              entry = role + "%S%" + @games[game][:tiles].length.to_s
+              # puts "Skip: #{entry}"
+              if !@games[game][:tiles].include?("A%S%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%S%" + @games[game][:tiles].length.to_s)
+                instantiate_game_action(entry, game, socket)
+              end
               # instantiate_game_action(entry, game, socket)
               # instantiate_game_action("CLR", game, socket)
             when 'concede'
@@ -126,7 +130,11 @@ class Server
               else
                 role = "B"
               end
-              entry = "C" + "%" + role
+              entry = role + "%C%" + @games[game][:tiles].length.to_s
+              # puts "Concede: #{entry}"
+              if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
+                instantiate_game_action(entry, game, socket)
+              end
               # instantiate_game_action(entry, game, socket)
               # instantiate_game_action("CLR", game, socket)
             when 'move'
@@ -139,7 +147,7 @@ class Server
                 role = "B"
               end
               entry = role + "%" + move.to_s
-              if !@games[game][:tiles].include?("A" + move.to_s) && !@games[game][:tiles].include?("B" + move.to_s)
+              if !@games[game][:tiles].include?("A%" + move.to_s) && !@games[game][:tiles].include?("B%" + move.to_s)
                 instantiate_game_action(entry, game, socket)
               end
             else
