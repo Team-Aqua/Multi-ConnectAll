@@ -73,19 +73,8 @@ module Views
       button8_ai_empty = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_ai_8_empty.png", :tileable => true), 277.5, 280, 35, lambda { set_ai(7) }, Gosu::Image.new("assets/images/btn_ai_8_clicked.png", false))
 
       @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.return_to_mode_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
-      @window.client_network_com.send_message("join")
-
-      data = @window.client_network_com.read_message
-      data = data.split('|')
-      if data && !data.empty?
-        if data[0] == "setup"
-          if data[1] == "0"
-            @game_state_model::player_role = 0
-          else 
-            @game_state_model::player_role = 1
-          end
-        end
-      end
+      
+      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
 
       if (@game_state_model::game_mode == :pvp)
         if @game_state_model::player_role == 0

@@ -96,7 +96,7 @@ class GameWindow < Gosu::Window
     @currentCtrl = @controllers[:menu]
 
     if @client_network_com == nil
-      @client_network_com = Controllers::NetworkCommunicationCtrl.new(SERVER, PORT)
+      @client_network_com = Controllers::NetworkCommunicationCtrl.new(SERVER, PORT, self)
     end
 
     @fps_init = Time.now.to_f
