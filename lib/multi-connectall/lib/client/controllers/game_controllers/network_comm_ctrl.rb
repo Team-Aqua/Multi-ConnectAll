@@ -4,6 +4,7 @@ module Controllers
 
     def initialize(server, port, window)
       @window = window
+      @game_state_model = @window.game_state_model
       begin
         @socket = TCPSocket.new(server, port)
       rescue
@@ -37,13 +38,16 @@ module Controllers
     end
 
     def send_win
-      @window.client_network_com.send_message(['win', @game_state_model::player_role].join('|'))  
+      @window.client_network_com.send_message(['win', @window.game_state_model::player_role].join('|'))  
     end
 
     def send_tie
       @window.client_network_com.send_message('tie')
     end
 
+    def move
+      @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
+    end
 
   end
 end
