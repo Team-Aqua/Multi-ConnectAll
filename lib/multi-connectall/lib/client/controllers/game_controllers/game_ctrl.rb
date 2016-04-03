@@ -107,8 +107,8 @@ module Controllers
           @game_state_model.toggle_player_turn_state;
           @view::control.check_available; 
           if self_proc == false
-            # @window.client_network_com.move
-            @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
+            @window.client_network_com.move(x)
+            # @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
           end
           @player_moved = false; 
           }

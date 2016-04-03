@@ -45,8 +45,8 @@ module Controllers
       @window.client_network_com.send_message('tie')
     end
 
-    def move
-      @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
+    def move(x)
+      @window.client_network_com.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
     end
 
   end
