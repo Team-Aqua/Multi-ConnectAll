@@ -164,9 +164,9 @@ module Controllers
                   return
                 end
               elsif position[1] == 'C' 
-                if ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0))
+                if (@game_state_model::turn_count < (data.length - 7))
                   # puts "jury"
-                  concede_logic
+                  concede_logic('other')
                   return
                 else 
                   return
@@ -317,18 +317,27 @@ module Controllers
     def concede_button_click
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
-        concede_logic
+        concede_logic('self')
         write_message(['concede', @game_state_model::player_role].join('|'))
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
     end
 
-    def concede_logic
+    def concede_logic(lost)
       @game_won = true
-      @game_state_model.toggle_player_turn_state
-      @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::player_turn_state].player_color)
-      @game_state_model::players[@game_state_model::player_turn_state].increment_win_score
+      # @game_state_model.toggle_player_turn_state
+      if (lost == 'self')
+        if (@game_state_model::player_role == 0)
+          winner = 1
+        else
+          winner = 0
+        end
+      else 
+        winner = @game_state_model::player_role
+      end
+      @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[winner].player_color)
+      @game_state_model::players[winner].increment_win_score
       @game_state_model::turn_count += 1
     end
 
