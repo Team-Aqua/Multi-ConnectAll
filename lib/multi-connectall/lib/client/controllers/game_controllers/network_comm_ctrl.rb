@@ -1,3 +1,4 @@
+require 'mysql'
 module Controllers
   class NetworkCommunicationCtrl
     include Celluloid::IO
