@@ -55,6 +55,7 @@ require_relative 'views/alert_popup/help_view'
 require_relative 'views/alert_popup/win_view'
 require_relative 'views/alert_popup/waiting_alert_view'
 require_relative 'views/alert_popup/login_alert_view'
+require_relative 'views/alert_popup/leaderboard_alert_view'
 
 require_relative '../ancillaries/m_contract_error'
 require_relative 'contracts/AI_contracts'

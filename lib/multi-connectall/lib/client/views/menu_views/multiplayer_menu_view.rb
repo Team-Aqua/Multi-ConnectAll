@@ -40,7 +40,7 @@ module Views
         'purple' => BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_lg_purple.png"), 110, 215, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_lg_purple_click.png"))
       }
 
-      puts "gsm: #{@game_state_model::player_role}"
+      #puts "gsm: #{@game_state_model::player_role}"
 
       @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 140, 345, 100, lambda { @controller.to_type_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
       

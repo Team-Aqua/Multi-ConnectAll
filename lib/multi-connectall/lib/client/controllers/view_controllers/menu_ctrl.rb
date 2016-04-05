@@ -252,6 +252,11 @@ module Controllers
       MenuControllerContracts.invariant(self)
     end
 
+    def alert_leaderboard
+      MenuControllerContracts.invariant(self)
+      @alert_view = @help_view = Views::LeaderboardAlertView.new(@window, self)
+      MenuControllerContracts.invariant(self)
+    end
 
     def to_classic_multiplayer_menu
       MenuControllerContracts.invariant(self)
