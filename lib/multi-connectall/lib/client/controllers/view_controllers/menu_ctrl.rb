@@ -9,7 +9,7 @@ module Controllers
       @window = window
       @game_state_model = game_state_model
       @menu_background = Views::MenuView.new(@window, self)
-      @views = [Views::TypeMenuView.new(@window, self), Views::ModeMenuView.new(@window, self)]
+      @views = [Views::InitialMenuView.new(@window, self), Views::SaveMenuView.new(@window, self), Views::TypeMenuView.new(@window, self), Views::MultiplayerMenuView.new(@window, self, @game_state_model), Views::LoginServerMenuView.new(@window, self), Views::ModeMenuView.new(@window, self)]
       @current_view = @views.first
       @alert_view = nil
     end
@@ -72,11 +72,11 @@ module Controllers
       MenuControllerContracts.invariant(self)
       if ai_level == nil
         if role == 0
-          @game_state_model::players.push(Models::RealPlayer.new(1, color, player_name))
+          @game_state_model::players.push(Models::RealPlayer.new(1, color, @game_state_model::name))
           @game_state_model::players.push(Models::RealPlayer.new(2, 'black', player2_name))
         elsif role == 1
           @game_state_model::players.push(Models::RealPlayer.new(1, 'green', player2_name))
-          @game_state_model::players.push(Models::RealPlayer.new(2, color, player_name))
+          @game_state_model::players.push(Models::RealPlayer.new(2, color, @game_state_model::name))
         end
       else
         @game_state_model::players.push(Models::RealPlayer.new(1, color, player_name))
@@ -109,6 +109,46 @@ module Controllers
     # Redirects view to third menu view
     # Inputs: none
     # Outputs: none
+    
+    def to_login_server
+      MenuControllerContracts.invariant(self)
+      @current_view = @views[4]
+      MenuControllerContracts.invariant(self)
+    end
+    
+    def to_initial_menu
+      MenuControllerContracts.invariant(self)
+      @current_view = @views[0]
+      MenuControllerContracts.invariant(self)
+    end
+
+    def login(name: nil, server: nil, port: nil)
+      puts "name: #{name}, server: #{server}, port: #{port}"
+      @game_state_model::name = name
+      to_type_menu
+    end
+
+    def to_type_menu
+      MenuControllerContracts.invariant(self)
+      @current_view = @views[2]
+      MenuControllerContracts.invariant(self)
+    end
+
+    def start_otto_ai
+      @game_state_model::game_mode = :pvai
+      @game_state_model::num_of_players = 1
+      @game_state_model::game_type = :otto
+      @game_state_model::game_mode_logic = GameLogic::OttoRules.new(@game_state_model)
+      @current_view = Views::PlayerMenuView.new(@window, self, @game_state_model)
+    end
+
+    def start_classic_ai
+      @game_state_model::game_mode = :pvai
+      @game_state_model::num_of_players = 1
+      @game_state_model::game_type = :classic
+      @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
+      @current_view = Views::PlayerMenuView.new(@window, self, @game_state_model)
+    end
 
     def pvai_button_click
       MenuControllerContracts.invariant(self)
@@ -173,6 +213,17 @@ module Controllers
     # Inputs: none
     # Outputs: none
 
+    def question_login_button_click
+      MenuControllerContracts.invariant(self)
+      @alert_view = @help_view = Views::LoginAlertView.new(@window, self)
+      MenuControllerContracts.invariant(self)
+    end
+
+    ## 
+    # Opens AlertView for ConnectAll
+    # Inputs: none
+    # Outputs: none
+
     def question_classic_button_click
       MenuControllerContracts.invariant(self)
       @alert_view = @help_view = Views::ConnectInstructionsAlertView.new(@window, self)
@@ -195,9 +246,32 @@ module Controllers
     # Inputs: none
     # Outputs: none
 
-    def return_to_mode_menu
+    def to_save_menu
       MenuControllerContracts.invariant(self)
       @current_view = @views[1]
+      MenuControllerContracts.invariant(self)
+    end
+
+
+    def to_classic_multiplayer_menu
+      MenuControllerContracts.invariant(self)
+      @game_state_model::game_type = :classic
+      @game_state_model::game_mode = :pvp
+      @game_state_model::num_of_players = 2
+      @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
+      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
+      @current_view = Views::MultiplayerMenuView.new(@window, self, @game_state_model)
+      MenuControllerContracts.invariant(self)
+    end
+
+    def to_otto_multiplayer_menu
+      MenuControllerContracts.invariant(self)
+      @game_state_model::game_type = :otto
+      @game_state_model::game_mode = :pvp
+      @game_state_model::num_of_players = 2
+      @game_state_model::game_mode_logic = GameLogic::OttoRules.new(@game_state_model)
+      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
+      @current_view = Views::MultiplayerMenuView.new(@window, self, @game_state_model)
       MenuControllerContracts.invariant(self)
     end
 

@@ -8,7 +8,7 @@ module Controllers
     def initialize(window, game_state_model)
       @window = window
       @game_state_model = game_state_model
-      @views = [Views::MenuView.new(@window, self), Views::ModeMenuView.new(@window, self)]
+      @views = [Views::InitialMenuView.new(@window, self), Views::MenuView.new(@window, self), Views::ModeMenuView.new(@window, self)]
       @current_view = @views.first
       @alert_view = nil
     end

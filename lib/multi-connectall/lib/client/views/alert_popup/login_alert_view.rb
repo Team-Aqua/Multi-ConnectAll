@@ -1,14 +1,14 @@
 module Views
-  class OttoInstructionsAlertView
+  class LoginAlertView
 
     ## 
     # Called at main menu
-    # Shows details on how to play OTTO mode
+    # Used to identify how to play ConnectAll classic mode
 
     def initialize(window, controller)
       @window = window
       @controller = controller
-      @help = Gosu::Image.new("assets/images/item_what_is_otto_mode.png", :tileable => false)
+      @help = Gosu::Image.new("assets/images/item_how_to_login.png", :tileable => false)
       @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_dark.png"), 450, 35, 100, lambda { @controller.alert_close }, Gosu::Image.new("assets/images/btn_cancel_dark.png", :tileable => false))
     end
 
@@ -21,12 +21,12 @@ module Views
       @help.draw(30, 20, 100)
       @cancel.draw
     end
-
+    
     ##
     # Gosu implementation
     # Inputs: none
     # Outputs: none
-    
+
     def update
       @cancel.update
     end

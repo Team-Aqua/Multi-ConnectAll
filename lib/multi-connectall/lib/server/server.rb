@@ -138,6 +138,7 @@ class Server
               # instantiate_game_action(entry, game, socket)
               # instantiate_game_action("CLR", game, socket)
             when 'move'
+              puts "move activated!"
               move = data[2] #.to_i
               game = @players[user][1]
               puts "game: #{@players[user][0]}"
