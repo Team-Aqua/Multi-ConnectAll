@@ -56,6 +56,8 @@ require_relative 'views/alert_popup/win_view'
 require_relative 'views/alert_popup/waiting_alert_view'
 require_relative 'views/alert_popup/login_alert_view'
 require_relative 'views/alert_popup/leaderboard_alert_view'
+require_relative 'views/alert_popup/exit_alert_view'
+require_relative 'views/alert_popup/save_alert_view'
 
 require_relative '../ancillaries/m_contract_error'
 require_relative 'contracts/AI_contracts'
@@ -86,6 +88,9 @@ class GameWindow < Gosu::Window
     self.caption = "ConnectAll"
     @song = Gosu::Song.new(self, "assets/music/bitbop.mp3")
     @song.volume = 0.2
+    if @client_network_com == nil
+      @client_network_com = nil
+    end
     #@song.play(true)
 
     # Dev server interaction
@@ -99,10 +104,6 @@ class GameWindow < Gosu::Window
                       :game => Controllers::GameCtrl.new(self, @game_state_model) }
     #disabled for testing
     @currentCtrl = @controllers[:menu]
-
-    if @client_network_com == nil
-      @client_network_com = Controllers::NetworkCommunicationCtrl.new(SERVER, PORT, self)
-    end
 
     @fps_init = Time.now.to_f
     @fps_counter = 0
@@ -144,6 +145,14 @@ class GameWindow < Gosu::Window
     MainControllerContracts.invariant(self)
     initialize(440, 533)
     @currentCtrl = @controllers[:menu]
+    MainControllerContracts.invariant(self)
+  end
+
+  def return_to_type_menu
+    MainControllerContracts.invariant(self)
+    initialize(440, 533)
+    @currentCtrl = @controllers[:menu]
+    @currentCtrl.to_type_menu
     MainControllerContracts.invariant(self)
   end
 

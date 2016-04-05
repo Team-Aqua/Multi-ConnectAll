@@ -124,7 +124,10 @@ module Controllers
 
     def login(name: nil, server: nil, port: nil)
       puts "name: #{name}, server: #{server}, port: #{port}"
-      @game_state_model::name = name
+      @game_state_model::name = name  
+      if @window.client_network_com == nil
+        @window.client_network_com = Controllers::NetworkCommunicationCtrl.new(server, port.to_i, @window)
+      end
       to_type_menu
     end
 

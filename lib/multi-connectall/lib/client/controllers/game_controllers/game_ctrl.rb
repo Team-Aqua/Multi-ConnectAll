@@ -171,6 +171,10 @@ module Controllers
                 else 
                   return
                 end
+              elsif position[1] == 'V' 
+                puts "conceding!"
+                save_logic
+                return
               else
                 ypos = @game_state_model::grid.column_depth(position[1].to_i)
                 # puts "val: #{ypos} || relative position: #{position[2]}"
@@ -307,6 +311,14 @@ module Controllers
       @game_state_model::turn_count += 1
     end
 
+    def save_logic
+      puts "hey1111"
+      GameControllerContracts.invariant(self)
+      @alert_view = @help_view = Views::SaveAlertView.new(@window, self)
+      @menu_click_sound.play(0.7, 1, false)
+      GameControllerContracts.invariant(self)
+    end
+
     ##
     # Handles processing for 'concede' button clicked
     # If conceding is available, that player loses
@@ -364,6 +376,18 @@ module Controllers
       @alert_view = @help_view = Views::HelpAlertView.new(@window, self)
       @menu_click_sound.play(0.7, 1, false)
       GameControllerContracts.invariant(self)
+    end
+
+    def quit_alert
+      GameControllerContracts.invariant(self)
+      @alert_view = @help_view = Views::ExitAlertView.new(@window, self)
+      @menu_click_sound.play(0.7, 1, false)
+      GameControllerContracts.invariant(self)
+    end
+
+    def save_game
+      puts "Game save process here."
+      write_message(['save', @game_state_model::player_role].join('|'))
     end
 
     ##

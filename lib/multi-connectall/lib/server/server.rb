@@ -135,6 +135,19 @@ class Server
               if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+            when 'save'
+              # data[1] holds player_role
+              game = @players[user][1]
+              if @games[game][:player_1] == @players[user][0]
+                role = "A"
+              else
+                role = "B"
+              end
+              entry = role + "%V%" + @games[game][:tiles].length.to_s
+              # puts "Concede: #{entry}"
+              if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
+                instantiate_game_action(entry, game, socket)
+              end
               # instantiate_game_action(entry, game, socket)
               # instantiate_game_action("CLR", game, socket)
             when 'move'

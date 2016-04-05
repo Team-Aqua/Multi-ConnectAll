@@ -22,13 +22,14 @@ class TextField < Gosu::TextInput
       @box = Gosu::Image.new("assets/images/ip_name_lg.png", :tileable => false)
       @box_hover = Gosu::Image.new("assets/images/ip_name_lg_hover.png", :tileable => false)
       @MAX_WIDTH = 300
+      @width = 318
     else 
       @box = Gosu::Image.new("assets/images/ip_name.png", :tileable => false)
       @box_hover = Gosu::Image.new("assets/images/ip_name_hover.png", :tileable => false)
       @MAX_WIDTH = 133
+      @width = 151
     end
     @drawbox
-    @width = 151
     @height = 33
     @caret_height = 25
   end
