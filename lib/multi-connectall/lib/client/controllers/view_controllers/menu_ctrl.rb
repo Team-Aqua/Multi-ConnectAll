@@ -261,6 +261,16 @@ module Controllers
       MenuControllerContracts.invariant(self)
     end
 
+    def to_classic_queue
+      @window.client_network_com.join_queue('classic')
+      to_classic_multiplayer_menu
+    end
+
+    def to_otto_queue
+      @window.client_network_com.join_queue('classic')
+      to_otto_multiplayer_menu
+    end
+
     def to_classic_multiplayer_menu
       MenuControllerContracts.invariant(self)
       @game_state_model::game_type = :classic
