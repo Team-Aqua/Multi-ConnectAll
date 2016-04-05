@@ -4,8 +4,6 @@ module Controllers
     include Celluloid::IO
 
     def initialize(server, port, window)
-      @database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421grp2" , "Uje99Wzb", "ece421grp2", 13010)
-      @database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
       @window = window
       @game_state_model = @window.game_state_model
       begin
