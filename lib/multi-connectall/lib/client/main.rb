@@ -8,6 +8,10 @@ require 'mysql2'
 # Standard games import
 require 'gosu'
 
+
+require_relative '../shared/universal_game_state_model'
+
+
 require_relative '../ancillaries/abstractInterface'
 
 require_relative 'controllers/game_controllers/game_ctrl'

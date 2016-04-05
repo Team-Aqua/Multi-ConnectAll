@@ -1,3 +1,10 @@
+require_relative 'controllers//db_ctrl'
+require_relative 'controllers/server_ctrl'
+require_relative 'controllers/server_network_com_ctrl'
+
+require_relative 'models/server_model'
+require_relative '../shared/universal_game_state_model'
+
 require 'celluloid/io'
 require 'celluloid/autostart'
 
