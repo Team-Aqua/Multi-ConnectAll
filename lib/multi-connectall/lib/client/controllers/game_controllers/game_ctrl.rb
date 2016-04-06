@@ -312,7 +312,6 @@ module Controllers
     end
 
     def save_logic
-      puts "hey1111"
       GameControllerContracts.invariant(self)
       @alert_view = @help_view = Views::SaveAlertView.new(@window, self)
       @menu_click_sound.play(0.7, 1, false)

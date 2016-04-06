@@ -10,7 +10,7 @@ module Views
       @controller = controller
       @help = Gosu::Image.new("assets/images/item_waiting_player_menu.png", :tileable => false)
       # key: cancel must run @controller.exit_queue(which queue) later
-      @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_back.png"), 450, 35, 100, lambda { @controller.to_view_menu }, Gosu::Image.new("assets/images/btn_back_click.png", :tileable => false))
+      @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_back.png"), 320, 285, 100, lambda { @controller.alert_close }, Gosu::Image.new("assets/images/btn_back_click.png", :tileable => false))
     end
 
     ##
@@ -19,7 +19,7 @@ module Views
     # Outputs: none
 
     def draw
-      @help.draw(30, 20, 100)
+      @help.draw(30, 120, 100)
       @cancel.draw
     end
 

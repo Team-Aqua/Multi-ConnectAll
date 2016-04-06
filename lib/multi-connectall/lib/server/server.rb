@@ -37,6 +37,10 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
+            when 'classic'
+              socket.write("ready")
+            when 'otto'
+              socket.write("ready")
             when 'join'
               # puts "writing : #{@players.size % 2}"
               socket.write("setup|#{@players.size % 2}")

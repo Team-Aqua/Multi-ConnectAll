@@ -263,12 +263,24 @@ module Controllers
 
     def to_classic_queue
       @window.client_network_com.join_queue('classic')
-      to_classic_multiplayer_menu
+      @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
+      if data = @window.client_network_com.read_message 
+        if data == 'ready'
+          alert_close
+          to_classic_multiplayer_menu
+        end
+      end
     end
 
     def to_otto_queue
-      @window.client_network_com.join_queue('classic')
-      to_otto_multiplayer_menu
+      @window.client_network_com.join_queue('otto')
+      @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
+      if data = @window.client_network_com.read_message 
+        if data == 'ready'
+          alert_close
+          to_otto_multiplayer_menu
+        end
+      end
     end
 
     def to_classic_multiplayer_menu
