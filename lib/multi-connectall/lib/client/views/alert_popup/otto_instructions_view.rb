@@ -8,7 +8,7 @@ module Views
     def initialize(window, controller)
       @window = window
       @controller = controller
-      @help = Gosu::Image.new("assets/images/item_otto_mode.png", :tileable => false)
+      @help = Gosu::Image.new("assets/images/item_what_is_otto_mode.png", :tileable => false)
       @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_dark.png"), 450, 35, 100, lambda { @controller.alert_close }, Gosu::Image.new("assets/images/btn_cancel_dark.png", :tileable => false))
     end
 

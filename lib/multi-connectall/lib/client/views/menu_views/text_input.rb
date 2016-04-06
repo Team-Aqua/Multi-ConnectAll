@@ -14,14 +14,22 @@ class TextField < Gosu::TextInput
   PADDING_Y = -3
   attr_reader :x, :y
 
-  def initialize(window, font, x, y, ip_text)
+  def initialize(window, font, x, y, ip_text, size = nil)
     # TextInput's constructor doesn't expect any arguments.
     super()
     @window, @font, @x, @y, self.text = window, font, x, y, ip_text
-    @box = Gosu::Image.new("assets/images/ip_name.png", :tileable => false)
-    @box_hover = Gosu::Image.new("assets/images/ip_name_hover.png", :tileable => false)
+    if size == 'large'
+      @box = Gosu::Image.new("assets/images/ip_name_lg.png", :tileable => false)
+      @box_hover = Gosu::Image.new("assets/images/ip_name_lg_hover.png", :tileable => false)
+      @MAX_WIDTH = 300
+      @width = 318
+    else 
+      @box = Gosu::Image.new("assets/images/ip_name.png", :tileable => false)
+      @box_hover = Gosu::Image.new("assets/images/ip_name_hover.png", :tileable => false)
+      @MAX_WIDTH = 133
+      @width = 151
+    end
     @drawbox
-    @width = 151
     @height = 33
     @caret_height = 25
   end
@@ -33,7 +41,7 @@ class TextField < Gosu::TextInput
   # Outputs: text
   
   def filter text
-    if width + @font.text_width(text) < 133
+    if width + @font.text_width(text) < @MAX_WIDTH
       return text.gsub(/[^A-Z0-9a-z ]/, '')
     else 
       return nil

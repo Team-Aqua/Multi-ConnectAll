@@ -37,6 +37,14 @@ module Controllers
 
     end
 
+    def join_queue(mode)
+      if mode == 'classic'
+        @window.client_network_com.send_message("classic")
+      elsif mode == 'otto'
+        @window.client_network_com.send_message("otto")
+      end
+    end
+
     def send_win
       @window.client_network_com.send_message(['win', @window.game_state_model::player_role].join('|'))  
     end

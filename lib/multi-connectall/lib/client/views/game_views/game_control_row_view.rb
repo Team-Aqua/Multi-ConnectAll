@@ -16,7 +16,6 @@ module Views
       @grid_xpos = 50
       @grid_ypos = 116
       @control_disabled = false
-
       @x = @y = 0.0
       build_red_grid
     end

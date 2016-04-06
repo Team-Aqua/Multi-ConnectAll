@@ -38,14 +38,17 @@ require_relative 'views/game_views/game_control_row_view'
 require_relative 'views/game_views/game_header_view'
 require_relative 'views/game_views/game_footer_view'
 
+require_relative 'views/menu_views/initial_menu_view'
 require_relative 'views/menu_views/menu_view'
 require_relative 'views/menu_views/type_menu_view'
 require_relative 'views/menu_views/mode_menu_view'
 require_relative 'views/menu_views/player_select_menu_view'
+require_relative 'views/menu_views/multiplayer_menu_view'
 require_relative 'views/menu_views/text_input'
+require_relative 'views/menu_views/login_server_menu_view'
+require_relative 'views/menu_views/save_menu_view'
 
 require_relative 'views/animations/basic'
-
 
 require_relative 'views/alert_popup/alert_view'
 require_relative 'views/alert_popup/cascading_alert_view'
@@ -55,6 +58,11 @@ require_relative 'views/alert_popup/connect_all_view'
 require_relative 'views/alert_popup/help_view'
 require_relative 'views/alert_popup/win_view'
 require_relative 'views/alert_popup/waiting_alert_view'
+require_relative 'views/alert_popup/waiting_menu_alert_view'
+require_relative 'views/alert_popup/login_alert_view'
+require_relative 'views/alert_popup/leaderboard_alert_view'
+require_relative 'views/alert_popup/exit_alert_view'
+require_relative 'views/alert_popup/save_alert_view'
 
 require_relative '../ancillaries/m_contract_error'
 require_relative 'contracts/AI_contracts'
@@ -85,6 +93,9 @@ class GameWindow < Gosu::Window
     self.caption = "ConnectAll"
     @song = Gosu::Song.new(self, "assets/music/bitbop.mp3")
     @song.volume = 0.2
+    if @client_network_com == nil
+      @client_network_com = nil
+    end
     #@song.play(true)
 
     # Dev server interaction
@@ -98,10 +109,6 @@ class GameWindow < Gosu::Window
                       :game => Controllers::GameCtrl.new(self, @game_state_model) }
     #disabled for testing
     @currentCtrl = @controllers[:menu]
-
-    if @client_network_com == nil
-      @client_network_com = Controllers::NetworkCommunicationCtrl.new(SERVER, PORT, self)
-    end
 
     @fps_init = Time.now.to_f
     @fps_counter = 0
@@ -141,8 +148,16 @@ class GameWindow < Gosu::Window
   
   def start_menu
     MainControllerContracts.invariant(self)
-    initialize(347, 533)
+    initialize(440, 533)
     @currentCtrl = @controllers[:menu]
+    MainControllerContracts.invariant(self)
+  end
+
+  def return_to_type_menu
+    MainControllerContracts.invariant(self)
+    initialize(440, 533)
+    @currentCtrl = @controllers[:menu]
+    @currentCtrl.to_type_menu
     MainControllerContracts.invariant(self)
   end
 
@@ -208,5 +223,5 @@ end
 
 # Main.new(SERVER, PORT).show
 
-@window = GameWindow.new(347, 533)
+@window = GameWindow.new(440, 533)
 @window.show
