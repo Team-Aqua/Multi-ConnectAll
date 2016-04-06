@@ -234,8 +234,11 @@ module Controllers
         @game_won = true
         @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[@game_state_model::winner].player_color)
         @game_state_model::players[@game_state_model::winner].increment_win_score
-        @window.client_network_com.send_win
-        
+        if @game_state_model::winner == @game_state_model::player_role
+          @window.client_network_com.send_win
+        else
+          @window.client_network_com.send_loss
+        end
       end  
       if @game_state_model::state == :tie
         @win_sound.play(0.7, 1, false)
