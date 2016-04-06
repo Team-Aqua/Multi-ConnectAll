@@ -46,11 +46,16 @@ module Controllers
     end
 
     def send_win
-      @window.client_network_com.send_message(['win', @window.game_state_model::player_role].join('|'))  
+      @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
     end
 
+    def send_loss
+      @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+    end
+
+
     def send_tie
-      @window.client_network_com.send_message('tie')
+      @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
     end
 
     def move(x)

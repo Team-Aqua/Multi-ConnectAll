@@ -117,7 +117,11 @@ class Server
                 socket.write(response)
               end
             when 'win'
+              puts "win: #{data[1]}"
             when 'tie'
+              puts "tie: #{data[1]}"
+            when 'loss'
+              puts "loss: #{data[1]}"
             when 'skip'
               # data[1] holds player_role
               game = @players[user][1]
