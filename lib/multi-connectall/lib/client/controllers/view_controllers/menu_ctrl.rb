@@ -127,6 +127,7 @@ module Controllers
       @game_state_model::name = name  
       if @window.client_network_com == nil
         @window.client_network_com = Controllers::NetworkCommunicationCtrl.new(server, port.to_i, @window)
+        @window.client_network_com.init_login(name)
       end
       to_type_menu
     end

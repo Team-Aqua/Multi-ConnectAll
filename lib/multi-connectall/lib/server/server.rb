@@ -1,4 +1,4 @@
-require_relative 'controllers//db_ctrl'
+require_relative 'controllers/db_ctrl'
 require_relative 'controllers/server_ctrl'
 require_relative 'controllers/server_network_com_ctrl'
 
@@ -8,6 +8,7 @@ require_relative '../shared/universal_game_state_model'
 require 'celluloid/io'
 require 'celluloid/autostart'
 require 'Mysql2'
+require 'mysql'
 
 require_relative 'server_helpers'
 
@@ -22,8 +23,8 @@ class Server
     @games = {}
     @count = 1
 
+    @db_ctrl = Controllers::DBCtrl.new(host, port)
     # @database = Mysql2::Client.new(:host => host, :port => port)
-    # @database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
     
     async.run
   end
@@ -48,6 +49,8 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
+            when 'init'
+              @db_ctrl.insert_user_row_ignore(data[1])
             when 'classic'
               socket.write("ready")
             when 'otto'
@@ -121,11 +124,26 @@ class Server
                 socket.write(response)
               end
             when 'win'
-              puts "win: #{data[1]}"
+              puts "win: #{data[1]} :: on #{data[2]}"
+              if data[2] == 'classic'
+                @db_ctrl.increment_classic_win(data[1])
+              elsif data[2] == 'otto'
+                 @db_ctrl.increment_otto_win(data[1])
+              end 
             when 'tie'
-              puts "tie: #{data[1]}"
+              puts "tie: #{data[1]} :: on #{data[2]}"
+              if data[2] == 'classic'
+                @db_ctrl.increment_classic_tie(data[1])
+              elsif data[2] == 'otto'
+                 @db_ctrl.increment_otto_tie(data[1])
+              end 
             when 'loss'
-              puts "loss: #{data[1]}"
+              puts "loss: #{data[1]} :: on #{data[2]}"
+              if data[2] == 'classic'
+                @db_ctrl.increment_classic_loss(data[1])
+              elsif data[2] == 'otto'
+                 @db_ctrl.increment_otto_loss(data[1])
+              end 
             when 'skip'
               # data[1] holds player_role
               game = @players[user][1]

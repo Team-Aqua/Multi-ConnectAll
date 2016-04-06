@@ -38,6 +38,11 @@ module Controllers
 
     end
 
+    def init_login(name)
+      puts "#{['init', name].join('|')}"
+      @window.client_network_com.send_message(['init', name].join('|'))  
+    end
+
     def join_queue(mode)
       if mode == 'classic'
         @window.client_network_com.send_message("classic")
@@ -47,16 +52,28 @@ module Controllers
     end
 
     def send_win
-      @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+      if @window.game_state_model::game_type == :classic
+        @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+      elsif @window.game_state_model::game_type == :otto
+        @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+      end
     end
 
     def send_loss
-      @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+      if @window.game_state_model::game_type == :classic
+        @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+      elsif @window.game_state_model::game_type == :otto
+        @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+      end
     end
 
 
     def send_tie
-      @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+      if @window.game_state_model::game_type == :classic
+        @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+      elsif @window.game_state_model::game_type == :otto
+        @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+      end
     end
 
     def move(x)

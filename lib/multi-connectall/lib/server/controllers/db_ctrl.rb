@@ -1,16 +1,18 @@
 module Controllers
   class DBCtrl
 
-    def initialize()
-    	@databaseSemaphore = 
-      @database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
-      @database.autocommit = true
+    def initialize(host, port)
+    	# @databaseSemaphore = 
+      #@database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
+      # KEY: Install mysql, then run the following in mysql: CREATE DATABASE connectall; USE connectall;
+      @database = Mysql2::Client.new(:database => 'connectall', :host => 'localhost', :port => 16532, :flags => Mysql2::Client::MULTI_STATEMENTS)
+      # @database.autocommit = true
       create_tables()
     end
     
     def create_tables()
       @database.query("CREATE TABLE IF NOT EXISTS users (
-      	playerID INTEGER NOT NULL, 
+      	playerID INTEGER NOT NULL AUTO_INCREMENT, 
       	playerName VARCHAR(50) NOT NULL, 
       	classicWins INTEGER DEFAULT 0, 
       	classicLoses INTEGER DEFAULT 0, 
@@ -18,8 +20,7 @@ module Controllers
       	ottoWins INTEGER DEFAULT 0, 
       	ottoLoses INTEGER DEFAULT 0, 
       	ottoTies INTEGER DEFAULT 0, 
-      	UNIQUE (playerID))")
-
+      	UNIQUE (playerID, playerName))")
       @database.query("CREATE TABLE IF NOT EXISTS savedGames (
       	playerID INTEGER NOT NULL, 
       	gameState VARCHAR(2048), 
@@ -33,6 +34,38 @@ module Controllers
     
     def insert_user_row(playerID, playerName)
     	@database.query("INSERT INTO users (playerID, playerName) VALUES (" << playerID << ", ‘" << playerName << "’)")
+    end
+
+    def insert_user_row_ignore(playerName)
+      @database.query("INSERT IGNORE INTO users (playerName) VALUES ('#{playerName}')")
+    end
+
+    def increment_classic_win(playerName)
+      @database.query("UPDATE users SET classicWins = classicWins + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def increment_classic_loss(playerName)
+      @database.query("UPDATE users SET classicLoses = classicLoses + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def increment_classic_ties(playerName)
+      @database.query("UPDATE users SET classicTies = classicTies + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def increment_otto_wins(playerName)
+      @database.query("UPDATE users SET ottoWins = ottoWins + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def increment_otto_loss(playerName)
+      @database.query("UPDATE users SET ottoLoses = ottoLoses + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def increment_otto_ties(playerName)
+      @database.query("UPDATE users SET ottoTies = classicWins + 1 WHERE playerName = '#{playerName}'")
+    end
+
+    def return_all_users
+      @database.query("SELECT * FROM users")
     end
 
     def update_user_row(playerID, fieldName)
