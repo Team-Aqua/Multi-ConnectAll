@@ -2,9 +2,10 @@
 require 'celluloid/io'
 require 'socket'
 require 'randexp'
-
+require 'yaml'
 # Standard games import
 require 'gosu'
+
 
 
 require_relative '../shared/universal_game_state_model'

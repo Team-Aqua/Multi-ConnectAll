@@ -12,6 +12,10 @@ module Controllers
       end
     end
 
+    def create_message(header, playerid, data = nil)
+      return YAML.dump(data)
+    end
+
     def send_message(message)
       @socket.write(message) if @socket
     end
