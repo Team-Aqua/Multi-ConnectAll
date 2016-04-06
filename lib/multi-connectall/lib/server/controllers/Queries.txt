@@ -20,17 +20,19 @@ CREATE TABLE IF NOT EXISTS savedGames (
 	UNIQUE (playerID)
 );
 
-INSERT INTO users (playerID, name) VALUES (playerID, ‘name’);
-INSERT INTO savedGames (playerID, gameState) VALUES (playerID, 'gameState');
- 
-UPDATE users SET fieldName = fieldName+1 WHERE playerID = passedPlayerID;
-
-DELETE FROM savedGames WHERE playerID = passedPlayerID;
-
+/* Leaderboard Queries */
 SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5;
 SELECT playerName, ottoWins AS wins, ottoLoses AS loses, ottoTies AS ties FROM users ORDER BY ottoWins - ottoLoses + ottoTies DESC LIMIT 5;
 SELECT playerName, classicWins + ottoWins AS wins, classicLoses + ottoLoses AS loses, classicTies + ottoTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies + ottoWins - ottoLoses + ottoTies DESC LIMIT 5;
+
+/* User Table Queries */
+INSERT INTO users (playerID, name) VALUES (playerID, ‘name’);
+UPDATE users SET fieldName = fieldName+1 WHERE playerID = passedPlayerID;
+
+/* Saved Game Queries */
 SELECT gameState FROM savedGames WHERE playerID = passedPlayerID;
+INSERT INTO savedGames (playerID, gameState) VALUES (playerID, 'gameState');
+DELETE FROM savedGames WHERE playerID = passedPlayerID;
 
 
 
@@ -49,7 +51,3 @@ DELETE FROM savedGames WHERE 1234 = 1234;
 
 SELECT gameState FROM savedGames WHERE 1234 = 1234;
 SELECT gameState FROM savedGames WHERE 1234 = 2345;
-
-
-@database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
-@database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
