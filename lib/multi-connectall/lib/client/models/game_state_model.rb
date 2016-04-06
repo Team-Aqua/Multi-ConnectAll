@@ -21,6 +21,11 @@ module Models
       @ai = nil
     end
 
+    def generate_universal_game_state
+      model = Models::UniversalGameStateModel.new
+      return model
+    end
+
     ##
     # Changes turn state depending on number of players
     # Inputs: none

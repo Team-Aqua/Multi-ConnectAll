@@ -3,9 +3,7 @@ module Models
 
     attr_accessor :header, :game_state, :grid, :user1, :user2, :user1_state, :user2_state, :winner
 
-    def initialize(header, user)
-      @header = header
-      @user = user
+    def initialize()
       @game_state = :waiting #:end/:active/:saved/:waiting/:save_waiting
       @game_mode = nil #:otto/classic
       @grid = Models::GridModel.new

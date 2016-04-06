@@ -44,8 +44,9 @@ class Server
     loop do 
         data = socket.readpartial(4096)
         if data && !data.empty?
-            model = extract_universal_game_state
-            if (model.game_state = :waiting)
+            # model = extract_universal_game_state
+            unpack = YAML.load(data)
+        end
         socket.write 
     end
     # loop do

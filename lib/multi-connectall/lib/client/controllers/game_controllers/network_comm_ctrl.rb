@@ -12,8 +12,14 @@ module Controllers
       end
     end
 
-    def create_message(header, playerid, data = nil)
-      return YAML.dump(data)
+    def create_message(header, data = nil)
+      if header != :join or header != :update
+        throw RuntimeError.new, "Invalid Header Packet"
+      end
+
+      packet =  {:header => header, :playerid => @game_state_model.players[0].name, :data => Lala.new}
+      packet = OpenStruct.new packet
+      return YAML.dump(packet)
     end
 
     def send_message(message)
@@ -25,20 +31,7 @@ module Controllers
     end
 
     def join_game
-      @window.client_network_com.send_message("join")
-
-      data = @window.client_network_com.read_message
-      data = data.split('|')
-      if data && !data.empty?
-        if data[0] == "setup"
-          if data[1] == "0"
-            @window.game_state_model::player_role = 0
-          else 
-            @window.game_state_model::player_role = 1
-          end
-        end
-      end
-
+      @window.client_network_com.send_message(create_message(:join, data = @game_state_model.generate_universal_game_state))
     end
 
     def send_win
