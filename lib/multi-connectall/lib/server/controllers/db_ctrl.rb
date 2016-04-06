@@ -33,7 +33,7 @@ module Controllers
     
     def insert_user_row(playerID, playerName)
     	@database.query("INSERT INTO users (playerID, playerName) VALUES (" << playerID << ", ‘" << playerName << "’)")
-    def
+    end
 
     def update_user_row(playerID, fieldName)
       @database.query("UPDATE users SET " << fieldName << " = " << fieldName << "+1 WHERE playerID = " << playerID << "")
@@ -41,7 +41,7 @@ module Controllers
 
     def insert_saved_game(playerID, gameState)
     	@database.query("INSERT INTO savedGames (playerID, gameState) VALUES (" << playerID << ", " << gameState << ")")
-    def
+    end
 
     def get_saved_game(playerID)
     	@database.query("SELECT gameState FROM savedGames WHERE playerID = " << playerID <<"")

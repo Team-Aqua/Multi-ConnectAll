@@ -7,6 +7,7 @@ require_relative '../shared/universal_game_state_model'
 
 require 'celluloid/io'
 require 'celluloid/autostart'
+require 'Mysql2'
 
 require_relative 'server_helpers'
 
@@ -21,8 +22,8 @@ class Server
     @games = {}
     @count = 1
 
-    @database = Mysql2::Client.new(:host => host, :port => port)
-    @database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
+    # @database = Mysql2::Client.new(:host => host, :port => port)
+    # @database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
     
     async.run
   end
