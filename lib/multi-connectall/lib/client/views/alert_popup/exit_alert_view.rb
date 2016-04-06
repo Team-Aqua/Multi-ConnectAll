@@ -10,7 +10,7 @@ module Views
       @controller = controller
       @help = Gosu::Image.new("assets/images/item_quit_game.png", :tileable => false)
       @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_dark.png"), 290, 20, 100, lambda { @controller.alert_close }, Gosu::Image.new("assets/images/btn_cancel_dark.png", :tileable => false))
-      @quit = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_quit.png"), 95, 295, 200, lambda { @window.close }, Gosu::Image.new("assets/images/btn_quit_click.png", :tileable => false))
+      @quit = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_quit.png"), 95, 295, 200, lambda { @controller.force_quit }, Gosu::Image.new("assets/images/btn_quit_click.png", :tileable => false))
       @save = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_save.png"), 95, 335, 200, lambda { @controller.save_game; @window.close }, Gosu::Image.new("assets/images/btn_save_click.png", :tileable => false))
     end
 

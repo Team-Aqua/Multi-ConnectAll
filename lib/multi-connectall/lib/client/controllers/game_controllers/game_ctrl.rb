@@ -342,6 +342,7 @@ module Controllers
       @game_won = true
       # @game_state_model.toggle_player_turn_state
       if (lost == 'self')
+        @window.client_network_com.send_loss
         if (@game_state_model::player_role == 0)
           winner = 1
         else
@@ -349,6 +350,7 @@ module Controllers
         end
       else 
         winner = @game_state_model::player_role
+        @window.client_network_com.send_win
       end
       @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[winner].player_color)
       @game_state_model::players[winner].increment_win_score
@@ -390,6 +392,12 @@ module Controllers
     def save_game
       puts "Game save process here."
       write_message(['save', @game_state_model::player_role].join('|'))
+    end
+
+    def force_quit
+      concede_logic('self')
+      write_message(['concede', @game_state_model::player_role].join('|'))
+      @window.close
     end
 
     ##
