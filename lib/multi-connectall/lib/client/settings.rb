@@ -1,4 +1,4 @@
-SCREEN_WIDTH = 347
+SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 533
 
 SERVER = '172.28.77.16'                        # ARGV[0] || 192.168.0.5

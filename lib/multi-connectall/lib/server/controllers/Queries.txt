@@ -1,0 +1,53 @@
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS savedGames;
+
+CREATE TABLE IF NOT EXISTS users (
+	playerID INTEGER NOT NULL,
+	playerName VARCHAR(50) NOT NULL, 
+	classicWins INTEGER DEFAULT 0, 
+	classicLoses INTEGER DEFAULT 0, 
+	classicTies INTEGER DEFAULT 0,
+	ottoWins INTEGER DEFAULT 0, 
+	ottoLoses INTEGER DEFAULT 0, 
+	ottoTies INTEGER DEFAULT 0,
+	overallScore INTEGER DEFAULT 0,
+	UNIQUE (playerID) 
+);
+
+CREATE TABLE IF NOT EXISTS savedGames (
+	playerID INTEGER NOT NULL, 
+	gameState VARCHAR(2048),
+	UNIQUE (playerID)
+);
+
+/* Leaderboard Queries */
+SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5;
+SELECT playerName, ottoWins AS wins, ottoLoses AS loses, ottoTies AS ties FROM users ORDER BY ottoWins - ottoLoses + ottoTies DESC LIMIT 5;
+SELECT playerName, classicWins + ottoWins AS wins, classicLoses + ottoLoses AS loses, classicTies + ottoTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies + ottoWins - ottoLoses + ottoTies DESC LIMIT 5;
+
+/* User Table Queries */
+INSERT INTO users (playerID, name) VALUES (playerID, ‘name’);
+UPDATE users SET fieldName = fieldName+1 WHERE playerID = passedPlayerID;
+
+/* Saved Game Queries */
+SELECT gameState FROM savedGames WHERE playerID = passedPlayerID;
+INSERT INTO savedGames (playerID, gameState) VALUES (playerID, 'gameState');
+DELETE FROM savedGames WHERE playerID = passedPlayerID;
+
+
+
+
+INSERT INTO users (playerID, playerName) VALUES (1, 'Aaron');
+INSERT INTO users (playerID, playerName) VALUES (2, 'Anson');
+INSERT INTO users (playerID, playerName) VALUES (3, 'Quentin');
+INSERT INTO users (playerID, playerName) VALUES (4, 'Aaron1');
+INSERT INTO users (playerID, playerName) VALUES (5, 'Anson1');
+INSERT INTO users (playerID, playerName) VALUES (6, 'Quentin1');
+INSERT INTO savedGames (playerID, gameState) VALUES (1234, 'gameState');
+
+UPDATE users SET ottoLoses = ottoLoses+1 WHERE playerID = 4;
+
+DELETE FROM savedGames WHERE 1234 = 1234;
+
+SELECT gameState FROM savedGames WHERE 1234 = 1234;
+SELECT gameState FROM savedGames WHERE 1234 = 2345;

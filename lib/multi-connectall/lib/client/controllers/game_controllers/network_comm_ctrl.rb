@@ -1,3 +1,4 @@
+require 'mysql'
 module Controllers
   class NetworkCommunicationCtrl
     include Celluloid::IO
@@ -34,12 +35,25 @@ module Controllers
       @window.client_network_com.send_message(create_message(:join, data = @game_state_model.generate_universal_game_state))
     end
 
-    def send_win
-      @window.client_network_com.send_message(['win', @window.game_state_model::player_role].join('|'))  
+    def join_queue(mode)
+      if mode == 'classic'
+        @window.client_network_com.send_message("classic")
+      elsif mode == 'otto'
+        @window.client_network_com.send_message("otto")
+      end
     end
 
+    def send_win
+      @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+    end
+
+    def send_loss
+      @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
+    end
+
+
     def send_tie
-      @window.client_network_com.send_message('tie')
+      @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name].join('|'))  
     end
 
     def move(x)

@@ -72,7 +72,7 @@ module Views
       button7_ai_empty = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_ai_7_empty.png", :tileable => true), 242, 280, 35, lambda { set_ai(6) }, Gosu::Image.new("assets/images/btn_ai_7_clicked.png", false))
       button8_ai_empty = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_ai_8_empty.png", :tileable => true), 277.5, 280, 35, lambda { set_ai(7) }, Gosu::Image.new("assets/images/btn_ai_8_clicked.png", false))
 
-      @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.return_to_mode_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
+      @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.to_initial_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
       
       @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
 
@@ -88,12 +88,12 @@ module Views
         end
         # @button_player2 = @player2_buttons[@color2_selection_wheel[@color2_selection]]
         # @name_player2 = @player2_name[@color2_selection_wheel[@color2_selection]]
-        @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175 + index * 110, "ID") }
+        @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175 + index * 110, NAME) }
       else
         @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
         @name_player = @player_name[@color_selection_wheel[@color_selection]]
         #Added to reduce logic complexity in draw and update. SHould be out of view tho
-        @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175, "Player #{index + 1}") }
+        @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175, NAME) }
         # @button_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_black.png"), -500, -500, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_black_click.png"))        
         # @name_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), -500, -500, 100, lambda { color_swap })
         @header_ai_difficulty = Gosu::Image.new("assets/images/btn_ai_difficulty.png", :tileable => false)

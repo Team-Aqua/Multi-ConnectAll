@@ -7,6 +7,7 @@ require_relative '../shared/universal_game_state_model'
 
 require 'celluloid/io'
 require 'celluloid/autostart'
+require 'Mysql2'
 
 require_relative 'server_helpers'
 
@@ -22,6 +23,9 @@ class Server
     @db_ctrl = Controllers::DBCtrl.new
     @network_comm_ctrl = Controllers::ServerNetworkCommunicationCtrl
 
+    # @database = Mysql2::Client.new(:host => host, :port => port)
+    # @database.query("CREATE TABLE users (name VARCHAR(50), wins INTEGER, loses INTEGER, ties INTEGER)")
+    
     async.run
   end
 
@@ -41,14 +45,16 @@ class Server
     _, port, host = socket.peeraddr
     user = "#{host}:#{port}"
     puts "#{user} has joined the server."
+
     loop do 
-        data = socket.readpartial(4096)
-        if data && !data.empty?
-            # model = extract_universal_game_state
-            unpack = YAML.load(data)
-        end
-        socket.write 
+      data = socket.readpartial(4096)
+      if data && !data.empty?
+          # model = extract_universal_game_state
+          unpack = YAML.load(data)
+      end
+      socket.write 
     end
+
     # loop do
     #   data = socket.readpartial(4096)
     #   # puts "#{data}"
@@ -56,6 +62,10 @@ class Server
     #   if data && !data.empty?
     #     begin
     #       case data[0]
+    #         when 'classic'
+    #           socket.write("ready")
+    #         when 'otto'
+    #           socket.write("ready")
     #         when 'join'
     #           # puts "writing : #{@players.size % 2}"
     #           socket.write("setup|#{@players.size % 2}")
@@ -125,7 +135,11 @@ class Server
     #             socket.write(response)
     #           end
     #         when 'win'
+    #           puts "win: #{data[1]}"
     #         when 'tie'
+    #           puts "tie: #{data[1]}"
+    #         when 'loss'
+    #           puts "loss: #{data[1]}"
     #         when 'skip'
     #           # data[1] holds player_role
     #           game = @players[user][1]
@@ -154,9 +168,23 @@ class Server
     #           if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
     #             instantiate_game_action(entry, game, socket)
     #           end
+    #         when 'save'
+    #           # data[1] holds player_role
+    #           game = @players[user][1]
+    #           if @games[game][:player_1] == @players[user][0]
+    #             role = "A"
+    #           else
+    #             role = "B"
+    #           end
+    #           entry = role + "%V%" + @games[game][:tiles].length.to_s
+    #           # puts "Concede: #{entry}"
+    #           if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
+    #             instantiate_game_action(entry, game, socket)
+    #           end
     #           # instantiate_game_action(entry, game, socket)
     #           # instantiate_game_action("CLR", game, socket)
     #         when 'move'
+    #           puts "move activated!"
     #           move = data[2] #.to_i
     #           game = @players[user][1]
     #           puts "game: #{@players[user][0]}"
@@ -174,6 +202,8 @@ class Server
     #       end
     #     rescue
     #   end
+    # end
+    
   rescue EOFError
     puts "#{user} has left server."
     socket.close

@@ -36,7 +36,7 @@ module GridModelContracts
 
   def self.pre_get_value(model, x, y)
     invariant(model)
-    if x < 0 then raise GridModelContractError.new("column index must be greater than zero") end
+    if x < 0 then raise GridModelContractError.new("column index must be greater than zero: #{x}") end
     if y < 0 then raise GridModelContractError.new("row index must be greater than zero") end
     if x > model.x then raise  GridModelContractError.new("column index must be greater than grids row range") end
     if y > model.x then raise  GridModelContractError.new("row index must be smaller than grids row range") end

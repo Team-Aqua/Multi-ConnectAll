@@ -25,3 +25,10 @@ You should consider the following:
   * What error checking, exception handling is required especially between machines?
   * Do I require a command-line interface (YES!) for debugging purposes? How do I test across machines? And debug a distributed program?
   * What components of the Ruby exception hierarchy are applicable to this problem? Illustrate your answer. Consider the content of the library at: http://c2.com/cgi/wiki?ExceptionPatterns Which are applicable to this problem? Illustrate your answer.
+
+To install mysql2 first type "brew install mysql" into the terminal, then install the gem mysql2 by typing "gem install mysql2"
+Reference: https://github.com/brianmario/mysql2
+
+How to start: https://coolestguidesontheplanet.com/start-stop-mysql-from-the-command-line-terminal-osx-linux/
+Where to downlad MySQL: http://www.sequelpro.com/docs/Install_MySQL_on_your_Mac
+Metadata: type "mysqladmin variables" into the terminal."
