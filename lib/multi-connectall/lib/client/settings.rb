@@ -1,7 +1,7 @@
 SCREEN_WIDTH = 400
 SCREEN_HEIGHT = 533
 
-SERVER = '172.28.87.82'                        # ARGV[0] || 192.168.0.5
-PORT = 50500                                    # ARGV[1] || 
+SERVER = '127.0.0.1'                        # ARGV[0] || 192.168.0.5
+PORT = 1234                                    # ARGV[1] ||
 NAME = Randgen.first_name(length: 5 + rand(5))  # ARGV[2] || 
 

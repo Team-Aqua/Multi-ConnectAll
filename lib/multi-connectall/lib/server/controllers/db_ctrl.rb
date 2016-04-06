@@ -3,7 +3,7 @@ module Controllers
 
     def initialize(host, port)
     	# @databaseSemaphore = 
-      #@database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
+      # @database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
       # KEY: Install mysql, then run the following in mysql: CREATE DATABASE connectall; USE connectall;
       @database = Mysql2::Client.new(:database => 'connectall', :host => 'localhost', :port => 16532, :flags => Mysql2::Client::MULTI_STATEMENTS)
       # @database.autocommit = true
@@ -12,7 +12,6 @@ module Controllers
     
     def create_tables()
       @database.query("CREATE TABLE IF NOT EXISTS users (
-      	playerID INTEGER NOT NULL AUTO_INCREMENT, 
       	playerName VARCHAR(50) NOT NULL, 
       	classicWins INTEGER DEFAULT 0, 
       	classicLoses INTEGER DEFAULT 0, 
@@ -20,11 +19,12 @@ module Controllers
       	ottoWins INTEGER DEFAULT 0, 
       	ottoLoses INTEGER DEFAULT 0, 
       	ottoTies INTEGER DEFAULT 0, 
-      	UNIQUE (playerID, playerName))")
+      	UNIQUE (playerName))")
       @database.query("CREATE TABLE IF NOT EXISTS savedGames (
-      	playerID INTEGER NOT NULL, 
+      	playerName VARCHAR(50) NOT NULL, 
       	gameState VARCHAR(2048), 
-      	UNIQUE (playerID))")
+      	UNIQUE (playerName))")
+      self.get_top_classic_players()
     end
     
     def drop_tables()
@@ -32,8 +32,8 @@ module Controllers
       @database.query("DROP TABLE IF EXISTS savedGames")
     end
     
-    def insert_user_row(playerID, playerName)
-    	@database.query("INSERT INTO users (playerID, playerName) VALUES (" << playerID << ", ‘" << playerName << "’)")
+    def insert_user_row(playerName)
+    	@database.query("INSERT INTO users (playerName) VALUES ('#{playerName}')")
     end
 
     def insert_user_row_ignore(playerName)
@@ -68,20 +68,20 @@ module Controllers
       @database.query("SELECT * FROM users")
     end
 
-    def update_user_row(playerID, fieldName)
-      @database.query("UPDATE users SET " << fieldName << " = " << fieldName << "+1 WHERE playerID = " << playerID << "")
+    def update_user_row(playerName, fieldName)
+      @database.query("UPDATE users SET #{fieldName} = #{fieldName}+1 WHERE playerName = '#{playerName}'")
     end
 
-    def insert_saved_game(playerID, gameState)
-    	@database.query("INSERT INTO savedGames (playerID, gameState) VALUES (" << playerID << ", " << gameState << ")")
+    def insert_saved_game(playerName, gameState)
+    	@database.query("INSERT INTO savedGames (playerName, gameState) VALUES ('#{playerName}', '#{gameState}')")
     end
 
-    def get_saved_game(playerID)
-    	@database.query("SELECT gameState FROM savedGames WHERE playerID = " << playerID <<"")
+    def get_saved_game(playerName)
+    	@database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
     end
 
-    def delete_saved_game(playerID)
-    	@database.query("DELETE FROM savedGames WHERE playerID = " << playerID << "")
+    def delete_saved_game(playerName)
+    	@database.query("DELETE FROM savedGames WHERE playerName = '#{playerName}'")
     end
 
     def get_top_classic_players()

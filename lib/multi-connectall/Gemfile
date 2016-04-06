@@ -6,6 +6,7 @@ gem "contracts"
 gem "gosu"
 gem 'celluloid-io'
 gem 'randexp'
+gem 'mysql2'
 gem 'mysql' , '2.9.1'
 
 gemspec
