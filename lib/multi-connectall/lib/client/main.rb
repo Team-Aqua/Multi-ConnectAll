@@ -2,6 +2,8 @@
 require 'celluloid/io'
 require 'socket'
 require 'randexp'
+require 'mysql'
+require 'mysql2'
 
 # Standard games import
 require 'gosu'
