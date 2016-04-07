@@ -39,45 +39,50 @@ module Controllers
     end
 
     def init_login(name)
-      puts "#{['init', name].join('|')}"
-      @window.client_network_com.send_message(['init', name].join('|'))  
+      # puts "#{['init', name].join('|')}"
+      send_message(['init', name].join('|'))  
     end
 
     def join_queue(mode)
       if mode == 'classic'
-        @window.client_network_com.send_message("classic")
+        send_message("classic")
       elsif mode == 'otto'
-        @window.client_network_com.send_message("otto")
+        send_message("otto")
       end
     end
 
     def send_win
       if @window.game_state_model::game_type == :classic
-        @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+        send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
       elsif @window.game_state_model::game_type == :otto
-        @window.client_network_com.send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+        send_message(['win', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
       end
     end
 
     def send_loss
       if @window.game_state_model::game_type == :classic
-        @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+        send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
       elsif @window.game_state_model::game_type == :otto
-        @window.client_network_com.send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+        send_message(['loss', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
       end
+    end
+
+    def receive_leaderboards
+      send_message('leaderboards')  
+      return read_message
     end
 
 
     def send_tie
       if @window.game_state_model::game_type == :classic
-        @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
+        send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'classic'].join('|'))  
       elsif @window.game_state_model::game_type == :otto
-        @window.client_network_com.send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
+        send_message(['tie', @window.game_state_model::players[@window.game_state_model::player_role].name, 'otto'].join('|'))  
       end
     end
 
     def move(x)
-      @window.client_network_com.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
+      send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
     end
 
   end

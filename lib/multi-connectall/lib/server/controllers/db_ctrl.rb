@@ -84,16 +84,34 @@ module Controllers
     	@database.query("DELETE FROM savedGames WHERE playerID = " << playerID << "")
     end
 
-    def get_top_classic_players()
-    	@database.query("SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5")
+    def get_top_classic_players
+    	results = @database.query("SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5")
+      total = ""
+      results.map do |row|
+        reval = "#{row['playerName']} / #{row['wins']} / #{row['loses']} / #{row['ties']} \n"
+        total << reval
+      end
+      return total
     end
 
-    def get_top_otto_players()
-			@database.query("SELECT playerName, ottoWins AS wins, ottoLoses AS loses, ottoTies AS ties FROM users ORDER BY ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
+    def get_top_otto_players
+			results = @database.query("SELECT playerName, ottoWins AS wins, ottoLoses AS loses, ottoTies AS ties FROM users ORDER BY ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
+      total = ""
+      results.map do |row|
+        reval = "#{row['playerName']} / #{row['wins']} / #{row['loses']} / #{row['ties']} \n"
+        total << reval
+      end
+      return total
     end
 
-    def get_top_overall_players()
-    	@database.query("SELECT playerName, classicWins + ottoWins AS wins, classicLoses + ottoLoses AS loses, classicTies + ottoTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies + ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
+    def get_top_overall_players
+    	results = @database.query("SELECT playerName, classicWins + ottoWins AS wins, classicLoses + ottoLoses AS loses, classicTies + ottoTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies + ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
+      total = ""
+      results.map do |row|
+        reval = "#{row['playerName']} / #{row['wins']} / #{row['loses']} / #{row['ties']} \n"
+        total << reval
+      end
+      return total
     end
 
   end

@@ -49,6 +49,12 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
+            when 'leaderboards'
+              results_top = @db_ctrl.get_top_overall_players
+              results_classic = @db_ctrl.get_top_classic_players
+              results_otto = @db_ctrl.get_top_otto_players
+              results_total = [results_top, results_classic, results_otto].join('|')
+              socket.write(results_total)
             when 'init'
               @db_ctrl.insert_user_row_ignore(data[1])
             when 'classic'
