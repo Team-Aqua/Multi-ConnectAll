@@ -69,6 +69,11 @@ module Views
 
       @help = Gosu::Image.new("assets/images/item_how_to_play.png", :tileable => false)
       @cancel_dark = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_dark.png"), 285, 20, 110, lambda { stop_help }, Gosu::Image.new("assets/images/btn_cancel_dark_click.png", :tileable => false))
+        
+      # puts "gsmp: #{@game_state_model::players}"
+      @player_one_stats = "0/0/0" # @controller.get_player_stats(@game_state_model::players[0]::name)
+      @player_two_stats = "0/0/0" # @controller.get_player_stats(@game_state_model::players[1]::name)
+
       set_tiles
     end
 
@@ -108,9 +113,9 @@ module Views
       @question.draw
       @cancel.draw
       @font.draw("#{@game_state_model::players[0]::name}", 50, @y + 7, 35, 1.0, 1.0, 0xff_ffffff)
-      @font.draw("Wins: #{@game_state_model::players[0]::score}", 50, @y + 22, 35, 1.0, 1.0, 0xff_ffffff)
+      @font.draw("Wins: #{@player_one_stats}", 50, @y + 22, 35, 1.0, 1.0, 0xff_ffffff)
       @font.draw("#{@game_state_model::players[1]::name}", 50, @y + 47, 35, 1.0, 1.0, 0xff_ffffff)
-      @font.draw("Wins: #{@game_state_model::players[1]::score}", 50, @y + 62, 35, 1.0, 1.0, 0xff_ffffff)
+      @font.draw("Wins: #{@player_two_stats}", 50, @y + 62, 35, 1.0, 1.0, 0xff_ffffff)
     end
 
     ##

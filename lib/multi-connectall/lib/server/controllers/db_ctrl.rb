@@ -84,6 +84,16 @@ module Controllers
     	@database.query("DELETE FROM savedGames WHERE playerName = '#{playerName}'")
     end
 
+    def get_total_stats(playerName)
+      results = @database.query("SELECT classicWins + ottoWins as wins, classicLoses + ottoLoses as loses, classicTies + ottoTies as ties FROM users WHERE playerName = '#{playerName}'")
+      total = ""
+      results.map do |row|
+        reval = "#{row['wins']} / #{row['loses']} / #{row['ties']}"
+        total << reval
+      end
+      return total
+    end
+
     def get_top_classic_players
     	results = @database.query("SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5")
       total = ""

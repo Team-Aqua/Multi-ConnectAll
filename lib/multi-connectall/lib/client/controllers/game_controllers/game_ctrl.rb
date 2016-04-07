@@ -400,6 +400,11 @@ module Controllers
       @window.close
     end
 
+    def get_player_stats(name)
+      write_message(['load_stats', name].join('|'))
+      return @window.client_network_com.read_message
+    end
+
     ##
     # Closes any alert view present
     # Inputs: none

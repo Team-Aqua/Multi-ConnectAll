@@ -49,6 +49,10 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
+            when 'load_stats'
+              results = @db_ctrl.get_total_stats(data[1])
+              puts "results!: #{results}"
+              socket.write(results)
             when 'leaderboards'
               results_top = @db_ctrl.get_top_overall_players
               results_classic = @db_ctrl.get_top_classic_players
