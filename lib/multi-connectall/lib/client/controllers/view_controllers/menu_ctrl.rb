@@ -78,7 +78,7 @@ module Controllers
         to_classic_multiplayer_menu
       end
 
-      
+
     end
 
     ## 
@@ -288,14 +288,6 @@ module Controllers
     def to_otto_queue
       @window.client_network_com.join_queue('otto')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
-      if data = @window.client_network_com.read_message 
-        # if data == 'ready'
-        @game_state_model::current_universal_game_state_model = data
-        @game_state_model::player_role = data.assigned_role
-        alert_close
-        to_otto_multiplayer_menu
-        # end
-      end
     end
 
     def to_classic_multiplayer_menu
