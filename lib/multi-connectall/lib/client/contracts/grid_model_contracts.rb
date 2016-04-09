@@ -1,3 +1,4 @@
+require_relative '../../ancillaries/m_contract_error'
 module GridModelContracts
   class GridModelContractError < MContractError
     def initialize(error)

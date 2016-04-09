@@ -3,11 +3,16 @@ require_relative 'controllers/server_ctrl'
 require_relative 'controllers/server_network_com_ctrl'
 
 require_relative 'models/server_model'
+require_relative '../client/models/grid_model'
 require_relative '../shared/universal_game_state_model'
+require_relative '../client/contracts/grid_model_contracts'
+require_relative '../ancillaries/m_contract_error'
 
 require 'celluloid/io'
 require 'celluloid/autostart'
 require 'Mysql2'
+require 'yaml'
+require 'ostruct'
 
 require_relative 'server_helpers'
 
@@ -20,7 +25,7 @@ class Server
     @server = TCPServer.new(host, port)
     
     @server_model = Models::ServerModel.new
-    @db_ctrl = Controllers::DBCtrl.new
+    # @db_ctrl = Controllers::DBCtrl.new
     @network_comm_ctrl = Controllers::ServerNetworkCommunicationCtrl
 
     # @database = Mysql2::Client.new(:host => host, :port => port)
@@ -34,25 +39,145 @@ class Server
   end
 
   def run
-    loop { async.handle_connection(@server.accept) }
+    loop do 
+      async.handle_connection(@server.accept)
+      # async.handle_classic_queue()
+      # async.handle_otto_queue()
+      # async.handle_active_games()
+    end
   end
 
-  def extract_universal_game_state
+  def handle_classic_queue()
+    if @server_model::queues[:classic].size >= 2
+      # create_match
+      player1 = @server_model::queues[:classic].pop
+      player2 = @server_model::queues[:classic].pop
+      game_model = Models::UniversalGameStateModel.new
+      
+      game_model.game_state = :initialized
+      game_model.game_mode = :classic
+      game_model.user1 = player1
+      game_model.user2 = player2
+      game_model.user1_state = :turn
+      game_model.user2_state = :waiting
 
+      @server_model::active_games.insert(0, game_model)
+
+      puts @server_model::active_games
+
+    end
+  end
+
+
+  def handle_otto_queue()
+    if @server_model::queues[:otto].size > 2
+      # create_match
+      player1 = @server_model::queues[:otto].pop
+      player2 = @server_model::queues[:otto].pop
+      game_model = Models::UniversalGameStateModel.new
+      
+      game_model.game_state = :initialized
+      game_model.game_mode = :otto
+      game_model.user1 = player1
+      game_model.user2 = player2
+      game_model.user1_state = :turn
+      game_model.user2_state = :waiting
+
+      @server_model::active_games.insert(0, game_model)
+
+      puts @server_model::active_games
+
+    end
+  end
+
+  def handle_active_games()
+    @server_model.active_games.each do |game|
+      if game.game_state == :updated
+        game.game_state = :active
+        
+        if game.user1_state == :turn 
+          game.user1_state = :waiting
+          game.user2_state = :turn
+          #send gamestate to client2
+          send_message(@server_model.online_users[game.user2], create_message(:update, game))
+        end
+
+        if game.user2_state == :turn 
+          game.user1_state == :turn
+          game.user2_state == :waiting
+          #send gamestate to client1
+          send_message(@server_model.online_users[game.user2], create_message(:update, game))
+        end
+
+      end
+
+      if game.game_state == :initialized
+        puts "Sending Initialized Game States to #{game.user1} and #{game.user2}"
+        game.assigned_role = 0
+        puts "socket #{@server_model.online_users[game.user1]}"
+        @server_model.online_users[game.user1].write(create_message(:update, game))
+        game.assigned_role = 1
+        @server_model.online_users[game.user2].write(create_message(:update, game))
+        puts "send"
+      end
+    end
+  end
+
+  def create_message(header, data = nil)
+    # if header != :join or header != :update
+    #   throw RuntimeError.new, "Invalid Header Packet"
+    # end
+    packet =  {:header => header, :playerid => "server", :data => data}
+    packet = OpenStruct.new packet
+    return YAML.dump(packet)
+  end
+
+  def send_message(socket, message)
+    puts socket
+    socket.write(message) if @socket
+  end
+
+  def login(socket, packet)
+    # if @server_model::online_users.include?(packet.playerid) then socket.close(); end FIX ME IMPLEMENT THIS
+    
+    @server_model::online_users[packet.playerid] = socket
+    puts "Online Users: #{@server_model::online_users.keys}"
+  end
+
+  def join_game(socket, packet)
+    puts packet.game_mode
+    @server_model::queues[packet.data.game_mode].insert(0, packet.playerid)
+    puts "#{packet.data.game_mode.to_s} Game Queue #{@server_model::queues[packet.data.game_mode]}"
+    # socket.write(create_message(:ack))
   end
 
   def handle_connection(socket)
     _, port, host = socket.peeraddr
     user = "#{host}:#{port}"
     puts "#{user} has joined the server."
+    puts socket
 
     loop do 
       data = socket.readpartial(4096)
       if data && !data.empty?
-          # model = extract_universal_game_state
-          unpack = YAML.load(data)
+        packet = YAML.load(data)
+        # puts packet
+        if packet.header == :login
+          login(socket, packet)
+        elsif packet.header == :join
+          join_game(socket, packet)
+          handle_classic_queue()
+          handle_otto_queue
+          handle_active_games
+        elsif packet.header == :update
+          update_game(socket, packet)
+          handle_active_games()
+        else
+          socket.write(create_message(:ack))
+        end
+            
       end
-      socket.write 
+      socket.write(create_message(:heartbeat))
     end
 
     # loop do

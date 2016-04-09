@@ -107,7 +107,7 @@ module Controllers
           @game_state_model.toggle_player_turn_state;
           @view::control.check_available; 
           if self_proc == false
-            @window.client_network_com.move(x)
+            @window.client_network_com.move(x, @current_universal_game_state_model)
             # @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
           end
           @player_moved = false; 
@@ -146,61 +146,62 @@ module Controllers
     def read_message
       if data = @window.client_network_com.read_message ## IMPORTANT: blocks until message is received
         puts "Data Read: #{data}"
-        data = data.split('|')
-        if data && !data.empty?
-          if data[0] == "game"
-            position = data.last
-            puts "Position: #{position} |||"
-            position = position.split('%')
-            if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
-              puts "Fixed length: #{data.length - 7} || Player turn: #{@game_state_model::turn_count}"
-              if position[1] == 'S'
-                if (@game_state_model::turn_count < (data.length - 7)) # ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0)) and 
-                  # puts "judge"
-                  @view::control.enable_control_on_player
-                  skip_logic
-                  return
-                else 
-                  return
-                end
-              elsif position[1] == 'C' 
-                if (@game_state_model::turn_count < (data.length - 7))
-                  # puts "jury"
-                  concede_logic('other')
-                  return
-                else 
-                  return
-                end
-              elsif position[1] == 'V' 
-                puts "conceding!"
-                save_logic
-                return
-              else
-                ypos = @game_state_model::grid.column_depth(position[1].to_i)
-                # puts "val: #{ypos} || relative position: #{position[2]}"
-                if ypos > position[2].to_i and @player_moved == false
-                  @player_moved = true;
-                  xpos = position[1].to_i
-                  @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
-                  move_block(self_proc: true)
-                end 
-              end
-            end
-          elsif data[0] == "load"
-            @data_loaded = true
-            @alert_view = nil
-            if @game_state_model::player_role == 0
-              @game_state_model::players[1]::name = data[2]
-              @game_state_model::players[1]::player_color = data[4] 
-              @game_state_model::players[1]::score = data[6].to_i
-            elsif @game_state_model::player_role == 1
-              @game_state_model::players[0]::name = data[1]
-              @game_state_model::players[0]::player_color = data[3] 
-              @game_state_model::players[0]::score = data[5].to_i
-            end
-          end
-        end
       end
+      #   data = data.split('|')
+      #   if data && !data.empty?
+      #     if data[0] == "game"
+      #       position = data.last
+      #       puts "Position: #{position} |||"
+      #       position = position.split('%')
+      #       if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
+      #         puts "Fixed length: #{data.length - 7} || Player turn: #{@game_state_model::turn_count}"
+      #         if position[1] == 'S'
+      #           if (@game_state_model::turn_count < (data.length - 7)) # ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0)) and 
+      #             # puts "judge"
+      #             @view::control.enable_control_on_player
+      #             skip_logic
+      #             return
+      #           else 
+      #             return
+      #           end
+      #         elsif position[1] == 'C' 
+      #           if (@game_state_model::turn_count < (data.length - 7))
+      #             # puts "jury"
+      #             concede_logic('other')
+      #             return
+      #           else 
+      #             return
+      #           end
+      #         elsif position[1] == 'V' 
+      #           puts "conceding!"
+      #           save_logic
+      #           return
+      #         else
+      #           ypos = @game_state_model::grid.column_depth(position[1].to_i)
+      #           # puts "val: #{ypos} || relative position: #{position[2]}"
+      #           if ypos > position[2].to_i and @player_moved == false
+      #             @player_moved = true;
+      #             xpos = position[1].to_i
+      #             @game_state_model::players[@game_state_model::player_turn_state].set_move(xpos)
+      #             move_block(self_proc: true)
+      #           end 
+      #         end
+      #       end
+      #     elsif data[0] == "load"
+      #       @data_loaded = true
+      #       @alert_view = nil
+      #       if @game_state_model::player_role == 0
+      #         @game_state_model::players[1]::name = data[2]
+      #         @game_state_model::players[1]::player_color = data[4] 
+      #         @game_state_model::players[1]::score = data[6].to_i
+      #       elsif @game_state_model::player_role == 1
+      #         @game_state_model::players[0]::name = data[1]
+      #         @game_state_model::players[0]::player_color = data[3] 
+      #         @game_state_model::players[0]::score = data[5].to_i
+      #       end
+      #     end
+      #   end
+      # end
     end
 
     ##
@@ -297,21 +298,21 @@ module Controllers
 
     def skip_button_click
       GameControllerContracts.invariant(self)
-      if @skip_run == false
-        @skip_run = true
-        if (@game_state_model::players[@game_state_model::player_turn_state].ai == nil) and (@game_state_model::player_turn_state == @game_state_model::player_role) # if it isn't an ai currently playing
-          write_message(['skip', @game_state_model::player_role].join('|'))
-          skip_logic
-          @menu_click_sound.play(0.7, 1, false)
-        end
-        @skip_run = false
-      end
+      # if @skip_run == false
+      #   @skip_run = true
+      #   if (@game_state_model::players[@game_state_model::player_turn_state].ai == nil) and (@game_state_model::player_turn_state == @game_state_model::player_role) # if it isn't an ai currently playing
+      #     write_message(['skip', @game_state_model::player_role].join('|'))
+      #     skip_logic
+      #     @menu_click_sound.play(0.7, 1, false)
+      #   end
+      #   @skip_run = false
+      # end
       GameControllerContracts.invariant(self)
     end      
 
     def skip_logic
-      @game_state_model.toggle_player_turn_state
-      @game_state_model::turn_count += 1
+      # @game_state_model.toggle_player_turn_state
+      # @game_state_model::turn_count += 1
     end
 
     def save_logic
@@ -331,28 +332,28 @@ module Controllers
     def concede_button_click
       GameControllerContracts.invariant(self)
       if @game_state_model::players[@game_state_model::player_turn_state].ai == nil # if it isn't an ai currently playing
-        concede_logic('self')
-        write_message(['concede', @game_state_model::player_role].join('|'))
+        # concede_logic('self')
+        # write_message(['concede', @game_state_model::player_role].join('|'))
         @menu_click_sound.play(0.7, 1, false)
       end
       GameControllerContracts.invariant(self)
     end
 
     def concede_logic(lost)
-      @game_won = true
-      # @game_state_model.toggle_player_turn_state
-      if (lost == 'self')
-        if (@game_state_model::player_role == 0)
-          winner = 1
-        else
-          winner = 0
-        end
-      else 
-        winner = @game_state_model::player_role
-      end
-      @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[winner].player_color)
-      @game_state_model::players[winner].increment_win_score
-      @game_state_model::turn_count += 1
+      # @game_won = true
+      # # @game_state_model.toggle_player_turn_state
+      # if (lost == 'self')
+      #   if (@game_state_model::player_role == 0)
+      #     winner = 1
+      #   else
+      #     winner = 0
+      #   end
+      # else 
+      #   winner = @game_state_model::player_role
+      # end
+      # @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[winner].player_color)
+      # @game_state_model::players[winner].increment_win_score
+      # @game_state_model::turn_count += 1
     end
 
     ##
@@ -363,8 +364,8 @@ module Controllers
 
     def reset_button_click
       GameControllerContracts.invariant(self)
-      @game_state_model::grid.reset
-      @view::control.build_red_grid
+      # @game_state_model::grid.reset
+      # @view::control.build_red_grid
       GameControllerContracts.invariant(self)
     end
 
@@ -388,8 +389,8 @@ module Controllers
     end
 
     def save_game
-      puts "Game save process here."
-      write_message(['save', @game_state_model::player_role].join('|'))
+      # puts "Game save process here."
+      # write_message(['save', @game_state_model::player_role].join('|'))
     end
 
     ##

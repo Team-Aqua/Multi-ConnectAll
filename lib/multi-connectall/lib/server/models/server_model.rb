@@ -1,11 +1,10 @@
 module Models
   class ServerModel
-
+    attr_accessor :queues, :active_games, :online_users 
     def initialize()
-      @otto_queue = []
-      @classic_queue = []
+      @queues = {:classic => [], :otto => []}
       @active_games = []
-      @online_users = []
+      @online_users = Hash.new
     end
   end
 end
