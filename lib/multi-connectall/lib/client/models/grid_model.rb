@@ -82,6 +82,14 @@ module Models
       GridModelContracts.post_set_value(self)
     end
 
+    def setGrid(grid)
+      for y in (7).downto(0)
+        for x in (7).downto(0)
+          setValue(x, y, grid[y][x])
+        end
+      end
+    end
+
     ##
     # Adds a tile at the given row for the player's turn
     # Inputs: x, player

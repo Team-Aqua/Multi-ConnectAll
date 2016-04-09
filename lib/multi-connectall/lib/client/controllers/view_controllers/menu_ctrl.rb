@@ -262,6 +262,19 @@ module Controllers
       MenuControllerContracts.invariant(self)
     end
 
+    def load_saved_game
+      # dev code to setup game mode
+      ai_level = Models::AILevel.new 
+      ai_level.level = 7
+      @game_state_model::game_mode = :pvai
+      @game_state_model::num_of_players = 1
+      @game_state_model::game_type = :classic
+      @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
+      @game_state_model::players.push(Models::RealPlayer.new(1, 'green', "Demo"))
+      @game_state_model::players.push(Models::AIPlayer.new(2, 'black', GameLogic::ClassicAI.new(@game_state_model, ai_level), "Roboto"))
+      @window.load_game
+    end
+
     def to_classic_queue
       @window.client_network_com.join_queue('classic')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)

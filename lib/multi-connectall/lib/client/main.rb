@@ -163,6 +163,13 @@ class GameWindow < Gosu::Window
     MainControllerContracts.invariant(self)
   end
 
+  def load_game
+    @controllers[:game]::view::grid.set_tiles
+    initialize(568, 343, model: @game_state_model)
+    @currentCtrl = @controllers[:game]
+    @currentCtrl.load_save
+  end
+
   ## 
   # Starts the game based on menu selection.
   # Connect game controller to views.
@@ -170,7 +177,6 @@ class GameWindow < Gosu::Window
   # Outputs: none
 
   def start_game
-
     # Dev server interaction
     # FIXME: Shift this to 'login to server' interaction
     # 

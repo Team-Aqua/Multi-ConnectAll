@@ -31,6 +31,24 @@ module Controllers
       GameControllerContracts.invariant(self)
     end
 
+    def load_save
+      turn_state = 1 # dev just for show, grab from server later
+      # grab this grid later to gen
+      @game_state_model::grid.setGrid([ 
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0],
+        [1,2,1,2,1,1,2,2],
+        [1,2,1,2,1,1,2,2],
+        [1,2,1,2,1,1,2,2]
+      ])
+      if turn_state == 1
+        @game_state_model.toggle_player_turn_state;
+      end
+    end
+
     ## 
     # Resets match, clears open alertviews
     # Forces model resets before resetting game.

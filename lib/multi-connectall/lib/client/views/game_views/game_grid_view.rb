@@ -56,6 +56,14 @@ module Views
       set_tiles
     end
 
+    def load_tiles
+      if @model::game_type == :classic
+        @tiles = @tilesClassic
+      elsif @model::game_type == :otto
+        @tiles = @tilesOtto
+      end
+    end
+
     ##
     # Sets tiles depending on game type selected in menu
     # Inputs: none

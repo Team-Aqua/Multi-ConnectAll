@@ -24,6 +24,8 @@ module ServerContracts
   end
 
   def self.pre_handle_connection(socket, server)
+    if socket == nil then raise ServerContractError.new("No socket selected.") end
+    if server == nil then raise ServerContractError.new("No server selected.") end
     # ensure that socket is not nil
     # ensure that server is not nil
   end
