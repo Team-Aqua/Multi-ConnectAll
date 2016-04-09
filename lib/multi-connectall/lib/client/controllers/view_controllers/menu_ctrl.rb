@@ -38,8 +38,12 @@ module Controllers
         @alert_view.update
       end
       if @window.client_network_com != nil
+        @window.client_network_com.send_message(@window.client_network_com.create_message(:heartbeat))
         data = @window.client_network_com.read_message
-        puts data
+        if data::header != :heartbeat
+          puts data::header
+          handle_data_packet(data)
+        end
       end
     end
 
@@ -65,6 +69,16 @@ module Controllers
       MenuControllerContracts.invariant(self)
       @current_view.button_down(key)
       MenuControllerContracts.invariant(self)
+    end
+
+    def handle_data_packet(packet)
+      if packet::header == :initialze
+        @game_state_model::player_role = packet::data::assigned_role
+        alert_close
+        to_classic_multiplayer_menu
+      end
+
+      
     end
 
     ## 
@@ -269,21 +283,6 @@ module Controllers
     def to_classic_queue
       @window.client_network_com.join_queue('classic')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
-
-      if data = @window.client_network_com.read_message
-
-        puts data
-        if data && !data.empty?
-          # if data == 'ready'
-          newData = YAML.load(data)
-          puts newData 
-          @game_state_model::current_universal_game_state_model = newData
-          @game_state_model::player_role = newData.assigned_role
-          alert_close
-          to_classic_multiplayer_menu
-          # end
-        end
-      end
     end
 
     def to_otto_queue

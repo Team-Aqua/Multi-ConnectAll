@@ -115,9 +115,9 @@ class Server
         puts "Sending Initialized Game States to #{game.user1} and #{game.user2}"
         game.assigned_role = 0
         puts "socket #{@server_model.online_users[game.user1]}"
-        @server_model.online_users[game.user1].write(create_message(:update, game))
+        @server_model.online_users[game.user1].write(create_message(:initialze, game))
         game.assigned_role = 1
-        @server_model.online_users[game.user2].write(create_message(:update, game))
+        @server_model.online_users[game.user2].write(create_message(:initialze, game))
         puts "send"
       end
     end
@@ -172,8 +172,6 @@ class Server
         elsif packet.header == :update
           update_game(socket, packet)
           handle_active_games()
-        else
-          socket.write(create_message(:ack))
         end
             
       end
