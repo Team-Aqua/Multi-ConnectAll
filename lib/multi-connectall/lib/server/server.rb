@@ -1,9 +1,5 @@
 require_relative 'controllers/db_ctrl'
-require_relative 'controllers/server_ctrl'
-require_relative 'controllers/server_network_com_ctrl'
-
 require_relative 'models/server_model'
-require_relative '../shared/universal_game_state_model'
 
 require 'celluloid/io'
 require 'celluloid/autostart'
@@ -25,9 +21,17 @@ class Server
     async.run
   end
 
+  ###
+  # shutdown
+  # Server shutdown process
+
   def shutdown
     @server.close if @server
   end
+
+  ###
+  # run 
+  # Server processing to ensure constant processing of clients
 
   def run
     loop { async.handle_connection(@server.accept) }
@@ -44,25 +48,65 @@ class Server
       if data && !data.empty?
         begin
           case data[0]
+
+            ###
+            # load_stats
+            # run when user requests w/l/t stats for specific user
+
             when 'load_stats'
               results = @db_ctrl.get_total_stats(data[1])
               socket.write(results)
+
+            ###
+            # leaderboards
+            # run when user requests leaderboard stats
+
             when 'leaderboards'
               results_top = @db_ctrl.get_top_overall_players
               results_classic = @db_ctrl.get_top_classic_players
               results_otto = @db_ctrl.get_top_otto_players
               results_total = [results_top, results_classic, results_otto].join('|')
               socket.write(results_total)
+
+            ###
+            # init
+            # run when user id is added to database
+
             when 'init'
               @db_ctrl.insert_user_row_ignore(data[1])
+
+            ###
+            # classic
+            # run when user requests ready mode
+            # can be overloaded to include additional queue data
+            # in further iterations
+
             when 'classic'
               socket.write("ready")
+
+            ###
+            # otto
+            # run when user requests ready mode
+            # can be overloaded to include additional queue data
+            # in further iterations
+
             when 'otto'
               socket.write("ready")
+
+            ###
+            # join
+            # run when user enters 'waiting for player' in menu
+            # loads player into queue
+
             when 'join'
-              # puts "writing : #{@players.size % 2}"
               socket.write("setup|#{@players.size % 2}")
               @players[user] = ["Temp", nil, "green"]
+
+            ###
+            # setup
+            # run when queue 'OK's' a two-player match
+            # sets up game structure, passes to player
+            
             when 'setup'
               @players[user] = [data[1], nil, data[2]]
               if @players.size % 2 == 0
@@ -94,10 +138,16 @@ class Server
               else
                 socket.write("waiting")
               end
+
+            ###
+            # setup_save
+            # used when player selects 'load game' from player
+            # attempts to load a game from database; if not, 
+            # joins the match that the other player readied from 'save game'
+
             when 'setup_save'
               @players[user] = [data[1], nil, nil]
               results = @db_ctrl.get_saved_game(data[1])
-              puts results
               if results != nil
                 resultdata = results.split("|") 
                 @games[@count] = { player_1: resultdata[0],
@@ -134,6 +184,12 @@ class Server
               else
                 socket.write("waiting")
               end
+
+            ###
+            # load_save
+            # loads save data in game controller
+            # requested on game startup
+
             when 'load_save'
               if @players[user][1] != nil
                 game = @players[user][1]
@@ -152,6 +208,12 @@ class Server
                 response = "waiting"
                 socket.write(response)
               end
+
+            ###
+            # load
+            # loads game data in game controller
+            # requested on game startup
+
             when 'load'
               if @players[user][1] != nil
                 game = @players[user][1]
@@ -168,6 +230,13 @@ class Server
                 response = "waiting"
                 socket.write(response)
               end
+
+            ###
+            # wait
+            # responds when user is waiting for updates
+            # if update is available, is written to user
+            # if not, waiting is responded to user
+
             when 'wait'
               if @players[user][1] != nil
                 game = @players[user][1]
@@ -184,6 +253,12 @@ class Server
                 response = "waiting"
                 socket.write(response)
               end
+
+            ###
+            # win
+            # logs win for player
+            # dependent on game_type
+
             when 'win'
               puts "win: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
@@ -191,13 +266,25 @@ class Server
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_wins(data[1])
               end 
+
+            ###
+            # tie
+            # logs ties for player
+            # dependent on game_type
+
             when 'tie'
               puts "tie: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
-                @db_ctrl.increment_classic_tie(data[1])
+                @db_ctrl.increment_classic_ties(data[1])
               elsif data[2] == 'otto'
-                 @db_ctrl.increment_otto_tie(data[1])
+                 @db_ctrl.increment_otto_ties(data[1])
               end 
+
+            ###
+            # loss
+            # logs loss for player
+            # dependent on game_type
+
             when 'loss'
               puts "loss: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
@@ -205,6 +292,12 @@ class Server
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_loss(data[1])
               end 
+
+            ###
+            # skip
+            # logs player skip action
+            # attributed as a game action
+
             when 'skip'
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
@@ -216,6 +309,12 @@ class Server
               if !@games[game][:tiles].include?("A%S%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%S%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+
+            ###
+            # concede
+            # logs player concede action
+            # attributed as a game action
+
             when 'concede'
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
@@ -227,6 +326,12 @@ class Server
               if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+
+            ###
+            # save
+            # logs game state, users in game
+            # alerts other user that game is in 'saved' mode
+
             when 'save'
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
@@ -241,8 +346,13 @@ class Server
               if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+
+            ### 
+            # move
+            # logs last standard movement action
+
             when 'move'
-              move = data[2] #.to_i
+              move = data[2]
               game = @players[user][1]
               puts "game: #{@players[user][0]}"
               if @games[game][:player_1] == @players[user][0]
@@ -254,14 +364,21 @@ class Server
               if !@games[game][:tiles].include?("A%" + move.to_s) && !@games[game][:tiles].include?("B%" + move.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+
+            ###
+            # unknown
+            # debugger
+
             else
-              puts "Unknown: #{data[0]}"
+              puts "ERROR, bad data received: #{data[0]}"
           end
         rescue
       end
     end
   end
   rescue EOFError
+    # System handling for player leaving game
+    # Clears player data to prevent synch issues
     puts "#{user} has left server."
     game = @players[user][1]
     @games.delete(game)
@@ -275,9 +392,12 @@ class Server
   end
 end
 
+### 
+# reconstruct_grid
+# Helper function to debug grid passed in system.
+
 def reconstruct_grid(gridipt)
   gridData = gridipt.split("&")
-  puts "GridData: #{gridData}"
   grid = []
   (0..7).each { |y|
     row = []
@@ -288,6 +408,10 @@ def reconstruct_grid(gridipt)
       }
   return grid
 end
+
+### 
+# print_grid
+# Helper function to debug grid passed in system
 
 def print_grid(grid)
   puts ""
@@ -301,6 +425,10 @@ def print_grid(grid)
   end
 end
 
+###
+# instantiate_game_action
+# Refactored process for handling game actions
+
 def instantiate_game_action(entry, game, socket)
   @games[game][:tiles] << entry
   response = ["game",
@@ -311,9 +439,11 @@ def instantiate_game_action(entry, game, socket)
     @games[game][:player_1_score],
     @games[game][:player_2_score],
     @games[game][:tiles]].join('|')
-  # puts "Move Response: #{response}"
   socket.write(response)
 end
+
+### 
+# Initialisation of server based on initial data passed
 
 server = ARGV[0] || "127.0.0.1"
 port = ARGV[1] || 8080

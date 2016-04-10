@@ -2,15 +2,13 @@ module Controllers
   class DBCtrl
 
     def initialize(host, port)
-    	# @databaseSemaphore = 
-      # @database = Mysql.new("mysqlsrv.ece.ualberta.ca", "ece421usr2" , "iDd0FBwq", "ece421grp2", 13020)
       # KEY: Install mysql, then run the following in mysql: CREATE DATABASE connectall; USE connectall;
+      # Design decision: change this code to attach to correct client in production
       @database = Mysql2::Client.new(:database => 'connectall', :host => 'localhost', :port => 16532, :flags => Mysql2::Client::MULTI_STATEMENTS)
-      # @database.autocommit = true
-      create_tables()
+      create_tables
     end
-    
-    def create_tables()
+
+    def create_tables
       @database.query("CREATE TABLE IF NOT EXISTS users (
       	playerName VARCHAR(50) NOT NULL, 
       	classicWins INTEGER DEFAULT 0, 
@@ -24,10 +22,9 @@ module Controllers
       	playerName VARCHAR(50) NOT NULL, 
       	gameState VARCHAR(2048), 
       	UNIQUE (playerName))")
-      # self.get_top_classic_players()
     end
     
-    def drop_tables()
+    def drop_tables
       @database.query("DROP TABLE IF EXISTS users")
       @database.query("DROP TABLE IF EXISTS savedGames")
     end
@@ -79,13 +76,11 @@ module Controllers
     def get_saved_game(playerName)
     	results = @database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
       total = ""
-      #puts results
       results.map do |row|
         reval = "#{row['gameState']}"
         total << reval
       end
-      
-      # delete_saved_game(playerName) FIXME: implement this in production
+      delete_saved_game(playerName) 
       return total
     end
 
