@@ -113,6 +113,7 @@ class Server
       end
 
       if game.game_state == :initialized
+        sleep(0.25) #magic stall makes things work
         puts "Sending Initialized Game States to #{game.user1} and #{game.user2}"
         game.assigned_role = 0
         puts "socket #{@server_model.online_users[game.user1]}"
