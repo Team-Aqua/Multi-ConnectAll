@@ -8,8 +8,9 @@ module Models
       @game_state = :waiting #:end/:active/:saved/:waiting/:save_waiting
       @game_mode = nil #:otto/classic
       @grid = Models::GridModel.new
-      @last_move_x = nil
-      @last_move_y = nil
+      # @last_move_x = nil
+      # @last_move_y = nil
+      @last_move = nil
       @user1 = nil
       @user2 = nil
       @user1_state = nil #:wait/:turn/:quit

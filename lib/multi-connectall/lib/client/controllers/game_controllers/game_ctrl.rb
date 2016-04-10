@@ -123,8 +123,8 @@ module Controllers
             handle_data_packet(data)
           end
         end
+        toggle_multiplayer_controls
       end
-      toggle_multiplayer_controls
       #   begin
       #   send_sync_message
       #   read_message
@@ -134,10 +134,11 @@ module Controllers
     end
 
     def handle_data_packet(packet)
-      @game_state_model::current_universal_game_state_model = packet::data
+      # @game_state_model::current_universal_game_state_model = packet::data
       puts packet
       if packet::header == :update
-          puts packet::data
+        @game_state_model::current_universal_game_state_model = packet::data
+        @game_state_model.load_game_state
       end
     end
         # if packet::header == :initialze and packet::data::game_mode == :classic
@@ -278,13 +279,13 @@ module Controllers
       # puts "turn state: #{@game_state_model::player_turn_state}, player role: #{@game_state_model::player_role}"
       if (@game_state_model::player_turn_state != @game_state_model::player_role) 
         if (@view::control.control_disabled == false)
-          # puts "disabling control on player"
+          puts "disabling control on player"
           @view::control.disable_control_on_player
         end
       elsif (@game_state_model::player_turn_state == @game_state_model::player_role) 
         if (@view::control.control_disabled == true)
           @view::control.enable_control_on_player
-          # puts "enabling control on player"
+          puts "enabling control on player"
         else
           #puts "SIGH"
         end

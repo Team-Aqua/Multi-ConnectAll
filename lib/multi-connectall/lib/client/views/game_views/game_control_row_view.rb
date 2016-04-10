@@ -93,7 +93,7 @@ module Views
           end
         }
       end
-      control_disabled = true
+      @control_disabled = true
     end
 
     ##
@@ -113,7 +113,7 @@ module Views
           end
         }
       end
-      control_disabled = false
+      @control_disabled = false
     end
 
     ##

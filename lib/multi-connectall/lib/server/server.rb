@@ -101,23 +101,24 @@ class Server
 
   def handle_active_games()
     @server_model.active_games.each do |game|
-      puts "HM: #{game.game_state}"
+      # puts "HM: #{game} ||| #{game.game_state}"
       if game.game_state == :updated
-        puts "UPDATED!~"
         game.game_state = :active
         
+        puts "game user 1 state: #{game.user1_state}"
+        puts "game user 2 state: #{game.user2_state}"
         if game.user1_state == :turn 
           game.user1_state = :waiting
           game.user2_state = :turn
           #send gamestate to client2
-          send_message(@server_model.online_users[game.user2], create_message(:update, game))
-        end
-
-        if game.user2_state == :turn 
+          @server_model.online_users[game.user2].write(create_message(:update, game))
+          @server_model.online_users[game.user1].write(create_message(:update, game))
+        elsif game.user2_state == :turn 
           game.user1_state == :turn
           game.user2_state == :waiting
           #send gamestate to client1
-          send_message(@server_model.online_users[game.user2], create_message(:update, game))
+          @server_model.online_users[game.user1].write(create_message(:update, game))
+          @server_model.online_users[game.user2].write(create_message(:update, game))
         end
 
       elsif game.game_state == :initialized
@@ -145,12 +146,18 @@ class Server
   def update_game(socket, packet)
     @server_model::active_games.each do |game|
       if game.user1 == packet::playerid || game.user2 == packet::playerid
-        game = packet::data
+        # game = packet::data
         game.game_state = :updated
+        game = packet::data
+        # game::last_move = packet::data::last_move
+        # game::winner = packet::data::winner
+        # game::grid = packet::data::grid
         puts "the game: #{game}, #{game.game_state}"
       end
     end
   end
+
+
 
   def create_message(header, data = nil)
     # if header != :join or header != :update
