@@ -516,7 +516,6 @@ class Server
   end
 end
 
-<<<<<<< HEAD
 def reconstruct_grid(gridipt)
   gridData = gridipt.split("&")
   puts "GridData: #{gridData}"
@@ -557,8 +556,6 @@ def instantiate_game_action(entry, game, socket)
   socket.write(response)
 end
 
-=======
->>>>>>> qBranch
 server = ARGV[0] || "127.0.0.1"
 port = ARGV[1] || 1234
 
