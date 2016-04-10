@@ -23,7 +23,6 @@ class Server
     @savedplayers = {}
     @games = {}
     @count = 1
-    @load_ready = false
 
     @db_ctrl = Controllers::DBCtrl.new(host, port)
     # @database = Mysql2::Client.new(:host => host, :port => port)
@@ -103,8 +102,6 @@ class Server
                 socket.write("waiting")
               end
             when 'setup_save'
-              puts "yoko kano"
-              # puts "setupsave: data[1]: #{data[1]}"
               @players[user] = [data[1], nil, nil]
               results = @db_ctrl.get_saved_game(data[1])
               puts results
@@ -121,35 +118,19 @@ class Server
               end
               if @players.size % 2 == 0
                 @players.each do |player, data|
-                  # puts "#{player} || #{data}"
                   if player != user && data[1] == nil
-                    # @games[@count] = { player_1: data[0],
-                    #                    player_2: @players[user][0],
-                    #                    player_1:_color: data[2],
-                    #                    player_2_color: @players[user][2],
-                    #                    player_1_score: 0,
-                    #                    player_2_score: 0,
-                    #                    tiles: [] }
-                    if @games[game][:player_1] == nil
-                      puts "continues"
-                      socket.write("waiting")
-                    else 
-                    puts "breaks @ #{@games[game][:player_1]}"
                     @players[player][1] = @count
                     @players[user][1] = @count
                     game = @players[user][1]
-                      response = ["loadsave",
-                                  @games[game][:player_1],
-                                  @games[game][:player_2],
-                                  @games[game][:player_1_color],
-                                  @games[game][:player_2_color],
-                                  @games[game][:player_1_score],
-                                  @games[game][:player_2_score],
-                                  @games[game][:saved_game]].join('|')
-                      # puts "DATA: #{game} || #{}"
-                      # puts "WRITING: #{response}"
-                      socket.write(response)
-                    end
+                    response = ["loadsave",
+                                @games[game][:player_1],
+                                @games[game][:player_2],
+                                @games[game][:player_1_color],
+                                @games[game][:player_2_color],
+                                @games[game][:player_1_score],
+                                @games[game][:player_2_score],
+                                @games[game][:saved_game]].join('|')
+                    socket.write(response)
                   end
                 end
                 @count += 1
@@ -205,21 +186,21 @@ class Server
                 socket.write(response)
               end
             when 'win'
-              # puts "win: #{data[1]} :: on #{data[2]}"
+              puts "win: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_win(data[1])
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_win(data[1])
               end 
             when 'tie'
-              # puts "tie: #{data[1]} :: on #{data[2]}"
+              puts "tie: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_tie(data[1])
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_tie(data[1])
               end 
             when 'loss'
-              # puts "loss: #{data[1]} :: on #{data[2]}"
+              puts "loss: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_loss(data[1])
               elsif data[2] == 'otto'
