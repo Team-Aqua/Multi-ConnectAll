@@ -23,10 +23,7 @@ class Server
     @savedplayers = {}
     @games = {}
     @count = 1
-
     @db_ctrl = Controllers::DBCtrl.new(host, port)
-    # @database = Mysql2::Client.new(:host => host, :port => port)
-    
     async.run
   end
 
@@ -45,14 +42,12 @@ class Server
 
     loop do
       data = socket.readpartial(4096)
-      # puts "#{data}"
       data = data.split('|')
       if data && !data.empty?
         begin
           case data[0]
             when 'load_stats'
               results = @db_ctrl.get_total_stats(data[1])
-              # puts "results!: #{results}"
               socket.write(results)
             when 'leaderboards'
               results_top = @db_ctrl.get_top_overall_players
@@ -215,14 +210,10 @@ class Server
                 role = "B"
               end
               entry = role + "%S%" + @games[game][:tiles].length.to_s
-              # puts "Skip: #{entry}"
               if !@games[game][:tiles].include?("A%S%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%S%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
-              # instantiate_game_action(entry, game, socket)
-              # instantiate_game_action("CLR", game, socket)
             when 'concede'
-              # data[1] holds player_role
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
@@ -230,7 +221,6 @@ class Server
                 role = "B"
               end
               entry = role + "%C%" + @games[game][:tiles].length.to_s
-              # puts "Concede: #{entry}"
               if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
@@ -238,8 +228,6 @@ class Server
               players = data[2]
               realplayers = data[3]
               grid = data[4]
-              # fixed_grid = reconstruct_grid(grid)
-              # print_grid(fixed_grid)
               player_turn_state = data[5]
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
@@ -247,7 +235,7 @@ class Server
                 player = @games[game][:player_1]
               else
                 role = "B"
-                player @games[game][:player_2]
+                player = @games[game][:player_2]
               end
               entry = role + "%V%" + @games[game][:tiles].length.to_s
               @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5], data[6], data[7]].join("|"))
@@ -329,7 +317,7 @@ def instantiate_game_action(entry, game, socket)
 end
 
 server = ARGV[0] || "127.0.0.1"
-port = ARGV[1] || 1234
+port = ARGV[1] || 8080
 
 supervisor = Server.supervise(server, port.to_i)
 trap("INT") do

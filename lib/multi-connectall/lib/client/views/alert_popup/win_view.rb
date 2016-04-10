@@ -25,7 +25,7 @@ module Views
 
       @view = @player_win_views[player_color]
       # @replay = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_replay.png"), 185, 445, 200, lambda { @controller.reset_match }, Gosu::Image.new("assets/images/btn_replay_click.png", :tileable => false))
-      @return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_sm.png"), 185, 485, 200, lambda { @menu_click_sound.play(0.7, 1, false); @window.return_to_type_menu }, Gosu::Image.new("assets/images/btn_return_sm_click.png", :tileable => false))
+      @return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_sm.png"), 185, 485, 200, lambda { @menu_click_sound.play(0.7, 1, false); @controller.return_to_spec_menu }, Gosu::Image.new("assets/images/btn_return_sm_click.png", :tileable => false))
     end
 
     ##

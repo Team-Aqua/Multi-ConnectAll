@@ -155,6 +155,15 @@ class GameWindow < Gosu::Window
     MainControllerContracts.invariant(self)
   end
 
+  def return_to_spec_menu
+    MainControllerContracts.invariant(self)
+    initialize(440, 533)
+    @currentCtrl = @controllers[:menu]
+    @currentCtrl.to_initial_menu
+    MainControllerContracts.invariant(self)
+  end
+    
+
   def return_to_type_menu
     MainControllerContracts.invariant(self)
     initialize(440, 533)
@@ -179,7 +188,9 @@ class GameWindow < Gosu::Window
   # Outputs: none
 
   def start_game
-    @client_network_com.send_message(['setup', @game_state_model::players[@game_state_model::player_role]::name, @game_state_model::players[@game_state_model::player_role].player_color].join('|'))
+    if @client_network_com != nil
+      @client_network_com.send_message(['setup', @game_state_model::players[@game_state_model::player_role]::name, @game_state_model::players[@game_state_model::player_role].player_color].join('|'))
+    end
     @controllers[:game]::view::grid.set_tiles
     initialize(568, 343, model: @game_state_model)
     @currentCtrl = @controllers[:game]

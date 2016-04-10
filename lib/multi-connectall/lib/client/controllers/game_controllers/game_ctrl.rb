@@ -34,24 +34,6 @@ module Controllers
 
     def load_save
       write_message(['setup_save', @game_state_model.name].join('|'))
-    #   #puts "pname p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
-    #   data = @window.client_network_com.read_message
-    #   puts data
-    #   data = data.split("|")
-    #   grid = data[4]
-    #   # puts "grid: #{grid}"
-    #   turn_state = data[5].to_i # dev just for show, grab from server later
-    #   # grab this grid later to gen
-    #   @game_state_model::players[0]::name = data[0]
-    #   @game_state_model::players[1]::name = data[1]
-    #   @game_state_model::players[0]::player_color = data[2]
-    #   @game_state_model::players[1]::player_color = data[3]
-    #   puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]}"
-    #   @game_state_model::grid.setGrid(reconstruct_grid(grid))
-    #   if turn_state == 1
-    #     @game_state_model.toggle_player_turn_state;
-    #   end
-    #   @data_loaded = true
     end
 
   def reconstruct_grid(gridipt)
@@ -143,7 +125,7 @@ module Controllers
           @view::control.disable_control_on_AI;
           @game_state_model.toggle_player_turn_state;
           @view::control.check_available; 
-          if self_proc == false
+          if self_proc == false && @game_state_model::game_mode != :pvai
             @window.client_network_com.move(x)
             # @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
           end
@@ -457,6 +439,14 @@ module Controllers
       write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::players[0].player_color, @game_state_model::players[1].player_color, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state].join('|'))
       # @game_state_model::grid.print_grid
       # write_message(['save', @game_state_model::player_role,].join('|'))
+    end
+
+    def return_to_spec_menu
+      if @game_state_model::game_mode != :pvp
+        @window.return_to_spec_menu
+      else
+        @window.return_to_type_menu
+      end
     end
 
     def force_quit

@@ -74,7 +74,7 @@ module Views
 
       @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.to_initial_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
       
-      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
+      # @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
 
       if (@game_state_model::game_mode == :pvp)
         if @game_state_model::player_role == 0
