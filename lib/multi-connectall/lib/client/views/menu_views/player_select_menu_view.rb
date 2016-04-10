@@ -9,7 +9,6 @@ module Views
     ##
     # Multiplayer functionality: on load,
     # this page sets up the multiplayer
-    # Dev: needs to be able to 'drop' player if they exit this screen
 
     def initialize(window, controller, game_state_model)
       @window = window
@@ -20,7 +19,6 @@ module Views
       @ai_level = Models::AILevel.new
 
       @menu_click_sound = Gosu::Sample.new(@window, "assets/sounds/menu_click.mp3")
-      #@ole_start = Gosu::Sample.new(@window, "assets/sounds/ole_start.mp3")
       @color_selection = 0
       @color2_selection = 0
       @color_selection_wheel = ['green','orange','pink','white']
@@ -74,8 +72,6 @@ module Views
 
       @button_return = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_return_lg.png"), 382, 205, 100, lambda { @controller.to_initial_menu }, Gosu::Image.new("assets/images/btn_return_lg_click.png")) 
       
-      # @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
-
       if (@game_state_model::game_mode == :pvp)
         if @game_state_model::player_role == 0
           @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
@@ -86,16 +82,11 @@ module Views
           @name_player = @player2_name[@color2_selection_wheel[@color2_selection]]
           @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color2_selection_wheel[@color2_selection], player_name: @text_fields[0].get_text, role: 1) }, Gosu::Image.new("assets/images/btn_start_click.png"))  
         end
-        # @button_player2 = @player2_buttons[@color2_selection_wheel[@color2_selection]]
-        # @name_player2 = @player2_name[@color2_selection_wheel[@color2_selection]]
         @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175 + index * 110, NAME) }
       else
         @button_player = @player_buttons[@color_selection_wheel[@color_selection]]
         @name_player = @player_name[@color_selection_wheel[@color_selection]]
-        #Added to reduce logic complexity in draw and update. SHould be out of view tho
         @text_fields = Array.new(1) { |index| TextField.new(@window, @font, 113, 175, NAME) }
-        # @button_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/header_player_black.png"), -500, -500, 100, lambda { color2_swap }, Gosu::Image.new("assets/images/header_player_black_click.png"))        
-        # @name_player2 = BtnItem.new(@window, Gosu::Image.new("assets/images/input_black_name.png"), -500, -500, 100, lambda { color_swap })
         @header_ai_difficulty = Gosu::Image.new("assets/images/btn_ai_difficulty.png", :tileable => false)
         @ai_bg = Gosu::Image.new("assets/images/bg_ai.png", :tileable => false)
         @button_rdy = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_start.png"), 382, 275, 100, lambda { @controller.player_rdy(@color_selection_wheel[@color_selection], player_name: @text_fields[0].get_text, ai_level: @ai_level)}, Gosu::Image.new("assets/images/btn_start_click.png"))

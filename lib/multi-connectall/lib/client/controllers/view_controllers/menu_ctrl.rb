@@ -115,6 +115,9 @@ module Controllers
       @current_view = @views[4]
       MenuControllerContracts.invariant(self)
     end
+
+    ## 
+    # Sends process back to first menu
     
     def to_initial_menu
       MenuControllerContracts.invariant(self)
@@ -122,8 +125,11 @@ module Controllers
       MenuControllerContracts.invariant(self)
     end
 
+    ## 
+    # Login player to server
+    # Connects to proper server and port, sends player over
+
     def login(name: nil, server: nil, port: nil)
-      puts "name: #{name}, server: #{server}, port: #{port}"
       @game_state_model::name = name  
       if @window.client_network_com == nil
         @window.client_network_com = Controllers::NetworkCommunicationCtrl.new(server, port.to_i, @window)
@@ -132,11 +138,17 @@ module Controllers
       to_type_menu
     end
 
+    ##
+    # Returns player to select game type (Classic, Otto) menu
+
     def to_type_menu
       MenuControllerContracts.invariant(self)
       @current_view = @views[2]
       MenuControllerContracts.invariant(self)
     end
+
+    ##
+    # Starts game with OTTO AI
 
     def start_otto_ai
       @game_state_model::game_mode = :pvai
@@ -146,6 +158,9 @@ module Controllers
       @current_view = Views::PlayerMenuView.new(@window, self, @game_state_model)
     end
 
+    ##
+    # Starts game with Classic AI
+
     def start_classic_ai
       @game_state_model::game_mode = :pvai
       @game_state_model::num_of_players = 1
@@ -153,6 +168,10 @@ module Controllers
       @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
       @current_view = Views::PlayerMenuView.new(@window, self, @game_state_model)
     end
+
+    ## 
+    # Setup pvAI game
+    # Deprecated functionality
 
     def pvai_button_click
       MenuControllerContracts.invariant(self)
@@ -256,14 +275,20 @@ module Controllers
       MenuControllerContracts.invariant(self)
     end
 
+    ##
+    # Calls leaderboard alert
+
     def alert_leaderboard
       MenuControllerContracts.invariant(self)
       @alert_view = @help_view = Views::LeaderboardAlertView.new(@window, self)
       MenuControllerContracts.invariant(self)
     end
 
+    ##
+    # Initialises save game process
+    # Sends to game controller
+
     def load_saved_game
-      # dev code to setup game mode
       @game_state_model::game_mode = :pvp
       @game_state_model::num_of_players = 2
       @game_state_model::game_type = :classic # change this to include otto once called
@@ -272,6 +297,9 @@ module Controllers
       @game_state_model::players.push(Models::RealPlayer.new(2, 'black', "Player 2"))
       @window.load_game
     end
+
+    ## 
+    # Places user in classic queue
 
     def to_classic_queue
       @window.client_network_com.join_queue('classic')
@@ -284,6 +312,9 @@ module Controllers
       end
     end
 
+    ## 
+    # Places user in otto queue
+
     def to_otto_queue
       @window.client_network_com.join_queue('otto')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
@@ -295,6 +326,9 @@ module Controllers
       end
     end
 
+    ## 
+    # Setup player in classic multipalyer game
+
     def to_classic_multiplayer_menu
       MenuControllerContracts.invariant(self)
       @game_state_model::game_type = :classic
@@ -305,6 +339,9 @@ module Controllers
       @current_view = Views::MultiplayerMenuView.new(@window, self, @game_state_model)
       MenuControllerContracts.invariant(self)
     end
+
+    ##
+    # Setup player in otto multiplayer game
 
     def to_otto_multiplayer_menu
       MenuControllerContracts.invariant(self)
@@ -327,7 +364,6 @@ module Controllers
       @current_view = @views[0]
       MenuControllerContracts.invariant(self)
     end
-    
-
+  
   end
 end

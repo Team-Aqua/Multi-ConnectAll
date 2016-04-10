@@ -1,6 +1,7 @@
 module Models
   class AIPlayer < Player
     attr_accessor :ai_level
+    
     ## 
     # Generic AI implementation for player
     # Generates using same player structure, but references AI for decisions

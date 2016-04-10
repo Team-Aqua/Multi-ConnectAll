@@ -3,6 +3,7 @@ module Views
 
     ##
     # View structure for P1vP2 or PvAI selection.
+    # Deprecated functionality in lieu of new design
 
     def initialize(window, controller)
       @window = window

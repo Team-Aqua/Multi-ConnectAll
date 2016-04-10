@@ -178,7 +178,6 @@ class GameWindow < Gosu::Window
     initialize(568, 343, model: @game_state_model)
     @currentCtrl = @controllers[:game]
     @currentCtrl.data_saved = true
-    # @currentCtrl.load_save
   end
 
   ## 
@@ -237,8 +236,6 @@ class GameWindow < Gosu::Window
   end
 
 end
-
-# Main.new(SERVER, PORT).show
 
 @window = GameWindow.new(440, 533)
 @window.show

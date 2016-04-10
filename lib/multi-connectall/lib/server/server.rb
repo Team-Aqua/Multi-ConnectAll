@@ -260,7 +260,6 @@ class Server
             # dependent on game_type
 
             when 'win'
-              puts "win: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_win(data[1])
               elsif data[2] == 'otto'
@@ -273,7 +272,6 @@ class Server
             # dependent on game_type
 
             when 'tie'
-              puts "tie: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_ties(data[1])
               elsif data[2] == 'otto'
@@ -286,7 +284,6 @@ class Server
             # dependent on game_type
 
             when 'loss'
-              puts "loss: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_loss(data[1])
               elsif data[2] == 'otto'

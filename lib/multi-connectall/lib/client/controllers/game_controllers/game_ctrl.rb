@@ -14,7 +14,6 @@ module Controllers
       @menu_click_sound = Gosu::Sample.new(@window, "assets/sounds/menu_click.mp3")
       @win_sound = Gosu::Sample.new(@window, "assets/sounds/cheer_win.mp3")
       
-      # puts "#{@game_state_model::game_mode}"
       if @game_state_model::game_mode != :pvai
         @alert_view = Views::WaitingAlertView.new(@window, self)
       else
@@ -36,19 +35,19 @@ module Controllers
       write_message(['setup_save', @game_state_model.name].join('|'))
     end
 
-  def reconstruct_grid(gridipt)
-    gridData = gridipt.split("&")
-    # puts "GridData: #{gridData}"
-    grid = []
-    (0..7).each { |y|
-      row = []
-      (0..7).each { |x|
-          row.push(gridData[(y * 8) + x].to_i)
+    def reconstruct_grid(gridipt)
+      gridData = gridipt.split("&")
+      # puts "GridData: #{gridData}"
+      grid = []
+      (0..7).each { |y|
+        row = []
+        (0..7).each { |x|
+            row.push(gridData[(y * 8) + x].to_i)
+          }
+          grid.push(row)
         }
-        grid.push(row)
-      }
-    return grid
-  end
+      return grid
+    end
 
     ## 
     # Resets match, clears open alertviews
@@ -127,7 +126,6 @@ module Controllers
           @view::control.check_available; 
           if self_proc == false && @game_state_model::game_mode != :pvai
             @window.client_network_com.move(x)
-            # @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
           end
           @player_moved = false; 
           @game_state_model::turn_count += 1
@@ -165,40 +163,53 @@ module Controllers
     # 'load' - new game logic - loads other player info
 
     def read_message
-      if data = @window.client_network_com.read_message ## IMPORTANT: blocks until message is received
-        puts "Data Read: #{data}"
+      if data = @window.client_network_com.read_message ## IMPORTANT: blocks until message is received - aka 'heartbeat'
         data = data.split('|')
         if data && !data.empty?
           if data[0] == "game"
             position = data.last
-            puts "Position: #{position} |||"
             position = position.split('%')
             if (position[0] == 'A' and @game_state_model::player_role == 1) or (position[0] == 'B' and @game_state_model::player_role == 0)
-              puts "Fixed length: #{data.length - 7} || Player turn: #{@game_state_model::turn_count}"
+                
+              ###
+              # SKIP Processing
+              # Used if valid skip information was passed to user
+
               if position[1] == 'S'
-                if (@game_state_model::turn_count < (data.length - 7)) # ((position[2] == '0' and @game_state_model::player_role == 1) or (position[1] == '1' and @game_state_model::player_role == 0)) and 
-                  # puts "judge"
+                if (@game_state_model::turn_count < (data.length - 7)) 
                   @view::control.enable_control_on_player
                   skip_logic
                   return
                 else 
                   return
                 end
+
+              ###
+              # CONCEDE Processing
+              # Used if valid concede information was passed to user
+              
               elsif position[1] == 'C' 
                 if (@game_state_model::turn_count < (data.length - 7))
-                  # puts "jury"
                   concede_logic('other')
                   return
                 else 
                   return
                 end
+
+              ###
+              # SAVE Processing
+              # Used if valid 'save data' information was passed to user
+
               elsif position[1] == 'V' 
-                puts "conceding!"
                 save_logic
                 return
+
+              ###
+              # MOVE Processing
+              # Used to process new move passed to user
+
               else
                 ypos = @game_state_model::grid.column_depth(position[1].to_i)
-                # puts "val: #{ypos} || relative position: #{position[2]}"
                 if ypos > position[2].to_i and @player_moved == false
                   @player_moved = true;
                   xpos = position[1].to_i
@@ -207,50 +218,52 @@ module Controllers
                 end 
               end
             end
+
+          ###
+          # loadsave
+          # used to interpret save game information 
+          # reloads saved game
+
           elsif data[0] == "loadsave"
             @data_loaded = true
             @alert_view = nil
             grid = data[9]
-            # puts "grid: #{grid}"
-            turn_state = data[8].to_i # dev just for show, grab from server later
-            # grab this grid later to gen
-            
+            turn_state = data[8].to_i 
             @game_state_model::players[0]::name = data[1]
             @game_state_model::players[1]::name = data[2]
             @game_state_model::players[0]::player_color = data[3]
             @game_state_model::players[1]::player_color = data[4]
-
             if data[7] == 'classic'
               @game_state_model::game_type = :classic
             elsif data[7] == 'otto'
               @game_state_model::game_type = :otto
             end
-
             if @game_state_model::game_type == :classic
               @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
             else
               @game_state_model::game_mode_logic = GameLogic::OttoRules.new(@game_state_model)
             end
-
             @view::grid::model = @game_state_model
             @view::header::game_state_model = @game_state_model
-
             @view::header.set_tiles
             @view::grid.set_tiles
-
-            # puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]} | #{data[6]} | #{data[7]} | #{data[8]} | #{data[9]} | #{data[10]}"
             if @game_state_model::name == @game_state_model::players[0]::name
               @game_state_model::player_role = 0
             elsif @game_state_model::name == @game_state_model::players[1]::name
               @game_state_model::player_role = 1
             else 
-              puts "Player queued incorrectly."
               window.close
             end
             @game_state_model::grid.setGrid(reconstruct_grid(grid))
             if turn_state == 1
               @game_state_model.toggle_player_turn_state;
             end
+
+          ###
+          # load
+          # used to interpret player information 
+          # passed on new game
+
           elsif data[0] == "load"
             @data_loaded = true
             @alert_view = nil
@@ -272,7 +285,6 @@ module Controllers
     # Sets multiplayer functions depending on whose turn it is
 
     def toggle_multiplayer_controls
-      # puts "turn state: #{@game_state_model::player_turn_state}, player role: #{@game_state_model::player_role}"
       if (@game_state_model::player_turn_state != @game_state_model::player_role) 
         if (@view::control.control_disabled == false)
           @view::control.disable_control_on_player
@@ -280,8 +292,6 @@ module Controllers
       elsif (@game_state_model::player_turn_state == @game_state_model::player_role) 
         if (@view::control.control_disabled == true)
           @view::control.enable_control_on_player
-        else
-          #puts "SIGH"
         end
       end
     end
@@ -372,12 +382,20 @@ module Controllers
         @skip_run = false
       end
       GameControllerContracts.invariant(self)
-    end      
+    end     
+
+    ##
+    # Separated skip logic 
+    # Used for server input of 'skip' received 
 
     def skip_logic
       @game_state_model.toggle_player_turn_state
       @game_state_model::turn_count += 1
     end
+
+    ##
+    # Separated save logic 
+    # Used for server input of 'save' received 
 
     def save_logic
       GameControllerContracts.invariant(self)
@@ -403,9 +421,12 @@ module Controllers
       GameControllerContracts.invariant(self)
     end
 
+    ##
+    # Separated concede logic 
+    # Used for server input of 'concede' received 
+
     def concede_logic(lost)
       @game_won = true
-      # @game_state_model.toggle_player_turn_state
       if (lost == 'self')
         if @window.client_network_com != nil
           @window.client_network_com.send_loss
@@ -451,6 +472,10 @@ module Controllers
       GameControllerContracts.invariant(self)
     end
 
+    ##
+    # Opens alert for exit
+    # Allows user to claritfy for exit or save
+
     def quit_alert
       GameControllerContracts.invariant(self)
       @alert_view = @help_view = Views::ExitAlertView.new(@window, self)
@@ -458,11 +483,18 @@ module Controllers
       GameControllerContracts.invariant(self)
     end
 
+    ##
+    # Saves current game to server
+    # Terminates existing gameplay
+
     def save_game
       write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::players[0].player_color, @game_state_model::players[1].player_color, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state, @game_state_model::game_type].join('|'))
-      # @game_state_model::grid.print_grid
-      # write_message(['save', @game_state_model::player_role,].join('|'))
     end
+
+    ##
+    # Specialised 'return to menu' functionality
+    # If singleplayer, return to offline menu
+    # If multiplayer, return to online menu
 
     def return_to_spec_menu
       if @game_state_model::game_mode != :pvp
@@ -472,6 +504,9 @@ module Controllers
       end
     end
 
+    ##
+    # Handles the 'X' button in game header
+
     def handle_quit
       if @game_state_model::game_mode == :pvai
         @window.close
@@ -480,6 +515,9 @@ module Controllers
       end
     end
 
+    ##
+    # Concedes if player selects 'exit'
+
     def force_quit
       concede_logic('self')
       if @window.client_network_com != nil
@@ -487,6 +525,10 @@ module Controllers
       end
       @window.close
     end
+
+    ##
+    # Loads stats
+    # Used for player_header to fill stat information
 
     def get_player_stats(name)
       write_message(['load_stats', name].join('|'))
