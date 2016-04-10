@@ -24,7 +24,7 @@ module Controllers
       	playerName VARCHAR(50) NOT NULL, 
       	gameState VARCHAR(2048), 
       	UNIQUE (playerName))")
-      self.get_top_classic_players()
+      # self.get_top_classic_players()
     end
     
     def drop_tables()
@@ -77,7 +77,15 @@ module Controllers
     end
 
     def get_saved_game(playerName)
-    	@database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
+    	results = @database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
+      total = ""
+      puts results
+      results.map do |row|
+        reval = "#{row['gameState']}"
+        total << reval
+      end
+      delete_saved_game(playerName)
+      return total
     end
 
     def delete_saved_game(playerName)

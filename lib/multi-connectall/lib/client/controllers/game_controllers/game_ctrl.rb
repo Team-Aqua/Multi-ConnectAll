@@ -32,22 +32,36 @@ module Controllers
     end
 
     def load_save
-      turn_state = 1 # dev just for show, grab from server later
+      #puts "pname p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
+      write_message(['loadsave', @game_state_model.name].join('|'))
+      data = @window.client_network_com.read_message
+      puts data
+      data = data.split("|")
+      grid = data[2]
+      # puts "grid: #{grid}"
+      turn_state = data[3].to_i # dev just for show, grab from server later
       # grab this grid later to gen
-      @game_state_model::grid.setGrid([ 
-        [0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0],
-        [1,2,1,2,1,1,2,2],
-        [1,2,1,2,1,1,2,2],
-        [1,2,1,2,1,1,2,2]
-      ])
+      @game_state_model::players[0]::name = data[0]
+      @game_state_model::players[1]::name = data[1]
+      @game_state_model::grid.setGrid(reconstruct_grid(grid))
       if turn_state == 1
         @game_state_model.toggle_player_turn_state;
       end
     end
+
+  def reconstruct_grid(gridipt)
+    gridData = gridipt.split("&")
+    # puts "GridData: #{gridData}"
+    grid = []
+    (0..7).each { |y|
+      row = []
+      (0..7).each { |x|
+          row.push(gridData[(y * 8) + x].to_i)
+        }
+        grid.push(row)
+      }
+    return grid
+  end
 
     ## 
     # Resets match, clears open alertviews
@@ -408,8 +422,9 @@ module Controllers
     end
 
     def save_game
-      puts "Game save process here."
-      write_message(['save', @game_state_model::player_role].join('|'))
+      write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state].join('|'))
+      # @game_state_model::grid.print_grid
+      # write_message(['save', @game_state_model::player_role,].join('|'))
     end
 
     def force_quit

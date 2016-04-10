@@ -182,21 +182,33 @@ class Server
               if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
+            when 'loadsave'
+              #puts "saved: #{data[1]}"
+              result = @db_ctrl.get_saved_game(data[1])
+              #puts "result: #{result}"
+              socket.write(result)
             when 'save'
               # data[1] holds player_role
+              puts "Self_name: #{data[1]}, p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
+              players = data[2]
+              realplayers = data[3]
+              grid = data[4]
+              # fixed_grid = reconstruct_grid(grid)
+              # print_grid(fixed_grid)
+              player_turn_state = data[5]
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
+                player = @games[game][:player_1]
               else
                 role = "B"
+                player @games[game][:player_2]
               end
               entry = role + "%V%" + @games[game][:tiles].length.to_s
-              # puts "Concede: #{entry}"
+              @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5]].join("|"))
               if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
-              # instantiate_game_action(entry, game, socket)
-              # instantiate_game_action("CLR", game, socket)
             when 'move'
               puts "move activated!"
               move = data[2] #.to_i
@@ -229,6 +241,32 @@ class Server
     end
     @players.delete(user)
     socket.close
+  end
+end
+
+def reconstruct_grid(gridipt)
+  gridData = gridipt.split("&")
+  puts "GridData: #{gridData}"
+  grid = []
+  (0..7).each { |y|
+    row = []
+    (0..7).each { |x|
+          row.push(gridData[(y * 8) + x].to_i)
+        }
+        grid.push(row)
+      }
+  return grid
+end
+
+def print_grid(grid)
+  puts ""
+  puts ""
+  puts ""
+  puts ""
+  puts ""
+  grid.each do |row|
+    print row
+    puts ""
   end
 end
 
