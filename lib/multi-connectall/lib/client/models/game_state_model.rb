@@ -66,7 +66,11 @@ module Models
     end
 
     def generate_universal_game_state
-      model = Models::UniversalGameStateModel.new
+      if @current_universal_game_state_model == nil 
+        model = Models::UniversalGameStateModel.new
+      else
+        model = @current_universal_game_state_model
+      end
       model.grid = @grid
       model.last_move = @last_move
       return model

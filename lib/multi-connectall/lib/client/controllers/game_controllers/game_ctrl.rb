@@ -134,9 +134,30 @@ module Controllers
     end
 
     def handle_data_packet(packet)
-
+      @game_state_model::current_universal_game_state_model = packet::data
+      puts packet
+      if packet::header == :update
+          puts packet::data
+      end
     end
+        # if packet::header == :initialze and packet::data::game_mode == :classic
+        #   @game_state_model::player_role = packet::data::assigned_role
+        #   alert_close
+        #   to_classic_multiplayer_menu
+        # end
+        # if packet::header == :initialze and packet::data::game_mode == :otto
+        #   @game_state_model::player_role = packet::data::assigned_role
+        #   alert_close
+        #   to_otto_multiplayer_menu
+        # end
+        # if packet::header == :start
+        #   @game_state_model.setup_players_state
+        #   @game_state_model.load_game_state
 
+        #   puts @game_state_model.player_role
+        #   puts @game_state_model.player_turn_state
+        #   @window.start_game
+  
     ##
     # Logic for placing block
     # Refactored for multiplayer functionality
@@ -152,7 +173,8 @@ module Controllers
           @game_state_model.toggle_player_turn_state;
           @view::control.check_available; 
           if self_proc == false
-            @window.client_network_com.move(x, @current_universal_game_state_model)
+            current_universal_game_state_model = @game_state_model.generate_universal_game_state
+            @window.client_network_com.move(x, current_universal_game_state_model)
             # @window.client_network_com.send_message(['move',@window.game_state_model::player_role,"#{x}%#{@window.game_state_model::grid.column_depth(x)}"].join('|'))
           end
           @player_moved = false; 
@@ -256,13 +278,13 @@ module Controllers
       # puts "turn state: #{@game_state_model::player_turn_state}, player role: #{@game_state_model::player_role}"
       if (@game_state_model::player_turn_state != @game_state_model::player_role) 
         if (@view::control.control_disabled == false)
-          puts "disabling control on player"
+          # puts "disabling control on player"
           @view::control.disable_control_on_player
         end
       elsif (@game_state_model::player_turn_state == @game_state_model::player_role) 
         if (@view::control.control_disabled == true)
           @view::control.enable_control_on_player
-          puts "enabling control on player"
+          # puts "enabling control on player"
         else
           #puts "SIGH"
         end

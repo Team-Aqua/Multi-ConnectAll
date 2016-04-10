@@ -101,7 +101,9 @@ class Server
 
   def handle_active_games()
     @server_model.active_games.each do |game|
+      puts "HM: #{game.game_state}"
       if game.game_state == :updated
+        puts "UPDATED!~"
         game.game_state = :active
         
         if game.user1_state == :turn 
@@ -117,7 +119,7 @@ class Server
           #send gamestate to client1
           send_message(@server_model.online_users[game.user2], create_message(:update, game))
         end
-        
+
       elsif game.game_state == :initialized
         sleep(0.25) #magic stall makes things work
         puts "Sending Initialized Game States to #{game.user1} and #{game.user2}"
@@ -136,6 +138,16 @@ class Server
           @server_model.online_users[game.user2].write(create_message(:start, game))
         end
 
+      end
+    end
+  end
+
+  def update_game(socket, packet)
+    @server_model::active_games.each do |game|
+      if game.user1 == packet::playerid || game.user2 == packet::playerid
+        game = packet::data
+        game.game_state = :updated
+        puts "the game: #{game}, #{game.game_state}"
       end
     end
   end
@@ -385,7 +397,6 @@ class Server
         elsif packet.header == :colorSynchronization
           sychronize_colors(socket, packet)
         end
-        
       end
       handle_active_games
       socket.write(create_message(:heartbeat))

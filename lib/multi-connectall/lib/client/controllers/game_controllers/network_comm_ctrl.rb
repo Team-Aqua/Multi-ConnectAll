@@ -98,7 +98,8 @@ module Controllers
     end
 
     def move(x, ugs)
-      @window.client_network_com.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
+      @window.client_network_com.send_message(create_message(:update, ugs))
+      # @window.client_network_com.send_message(['move',@game_state_model::player_role,"#{x}%#{@game_state_model::grid.column_depth(x)}"].join('|'))
     end
 
   end
