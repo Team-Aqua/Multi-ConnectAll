@@ -2,11 +2,19 @@ require_relative 'controllers/db_ctrl'
 require_relative 'controllers/server_ctrl'
 require_relative 'controllers/server_network_com_ctrl'
 
+
+require_relative '../ancillaries/m_contract_error'
+require_relative '../ancillaries/abstractInterface'
+
 require_relative 'models/server_model'
 require_relative '../client/models/grid_model'
+
+require_relative '../client/models/player'
+require_relative '../client/models/real_player'
+
 require_relative '../shared/universal_game_state_model'
 require_relative '../client/contracts/grid_model_contracts'
-require_relative '../ancillaries/m_contract_error'
+
 
 require 'celluloid/io'
 require 'celluloid/autostart'
@@ -109,10 +117,8 @@ class Server
           #send gamestate to client1
           send_message(@server_model.online_users[game.user2], create_message(:update, game))
         end
-
-      end
-
-      if game.game_state == :initialized
+        
+      elsif game.game_state == :initialized
         sleep(0.25) #magic stall makes things work
         puts "Sending Initialized Game States to #{game.user1} and #{game.user2}"
         game.assigned_role = 0
@@ -121,6 +127,15 @@ class Server
         game.assigned_role = 1
         @server_model.online_users[game.user2].write(create_message(:initialze, game))
         puts "send"
+        game.game_state = :active
+
+      elsif game.game_state == :colorSynchronization
+        if game.user1_data != nil and game.user2_data != nil
+          game.game_state = :active
+          @server_model.online_users[game.user1].write(create_message(:start, game))
+          @server_model.online_users[game.user2].write(create_message(:start, game))
+        end
+
       end
     end
   end
@@ -151,6 +166,19 @@ class Server
     @server_model::queues[packet.data.game_mode].insert(0, packet.playerid)
     puts "#{packet.data.game_mode.to_s} Game Queue #{@server_model::queues[packet.data.game_mode]}"
     # socket.write(create_message(:ack))
+  end
+
+  def sychronize_colors(socket, packet)
+    @server_model::active_games.each do |game|
+      if game.user1 == packet::playerid
+        game.game_state = :colorSynchronization
+        game.user1_data = packet::data::user1_data
+      end
+      if game.user2 == packet::playerid
+        game.game_state = :colorSynchronization
+        game.user2_data = packet::data::user2_data
+      end
+    end
   end
 
   def handle_connection(socket)
@@ -350,15 +378,16 @@ class Server
           login(socket, packet)
         elsif packet.header == :join
           join_game(socket, packet)
-          handle_classic_queue()
+          handle_classic_queue
           handle_otto_queue
-          handle_active_games
         elsif packet.header == :update
           update_game(socket, packet)
-          handle_active_games()
+        elsif packet.header == :colorSynchronization
+          sychronize_colors(socket, packet)
         end
         
       end
+      handle_active_games
       socket.write(create_message(:heartbeat))
     end
 
@@ -412,14 +441,14 @@ class Server
     #         when 'load'
     #           if @players[user][1] != nil
     #             game = @players[user][1]
-    #             response = ["load",
-    #                         @games[game][:player_1],
-    #                         @games[game][:player_2],
-    #                         @games[game][:player_1_color],
-    #                         @games[game][:player_2_color],
-    #                         @games[game][:player_1_score],
-    #                         @games[game][:player_2_score],
-    #                         @games[game][:tiles]].join('|')
+                # response = ["load",
+                #             @games[game][:player_1],
+                #             @games[game][:player_2],
+                #             @games[game][:player_1_color],
+                #             @games[game][:player_2_color],
+                #             @games[game][:player_1_score],
+                #             @games[game][:player_2_score],
+                #             @games[game][:tiles]].join('|')
     #             socket.write(response)
     #           else
     #             response = "waiting"

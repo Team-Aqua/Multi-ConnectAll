@@ -72,10 +72,25 @@ module Controllers
     end
 
     def handle_data_packet(packet)
-      if packet::header == :initialze
+      @game_state_model::current_universal_game_state_model = packet::data
+      puts packet
+      if packet::header == :initialze and packet::data::game_mode == :classic
         @game_state_model::player_role = packet::data::assigned_role
         alert_close
         to_classic_multiplayer_menu
+      end
+      if packet::header == :initialze and packet::data::game_mode == :otto
+        @game_state_model::player_role = packet::data::assigned_role
+        alert_close
+        to_otto_multiplayer_menu
+      end
+      if packet::header == :start
+        @game_state_model.setup_players_state
+        @game_state_model.load_game_state
+
+        puts @game_state_model.player_role
+        puts @game_state_model.player_turn_state
+        @window.start_game
       end
 
 
@@ -92,9 +107,11 @@ module Controllers
         if role == 0
           @game_state_model::players.push(Models::RealPlayer.new(1, color, @game_state_model::name))
           @game_state_model::players.push(Models::RealPlayer.new(2, 'black', player2_name))
+          @game_state_model::current_universal_game_state_model.user1_data = @game_state_model::players[0]
         elsif role == 1
           @game_state_model::players.push(Models::RealPlayer.new(1, 'green', player2_name))
           @game_state_model::players.push(Models::RealPlayer.new(2, color, @game_state_model::name))
+          @game_state_model::current_universal_game_state_model.user2_data = @game_state_model::players[1]
         end
       else
         @game_state_model::players.push(Models::RealPlayer.new(1, color, player_name))
@@ -104,7 +121,8 @@ module Controllers
         @game_state_model::players.push(Models::AIPlayer.new(2, 'black', GameLogic::OttoAI.new(@game_state_model, ai_level), "Roboto"))
         end
       end
-      @window.start_game
+      @window.client_network_com.send_message(@window.client_network_com.create_message(:colorSynchronization, @game_state_model::current_universal_game_state_model))
+      # @window.start_game
       MenuControllerContracts.invariant(self)
     end
 

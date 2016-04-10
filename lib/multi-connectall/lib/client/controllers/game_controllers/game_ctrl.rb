@@ -16,7 +16,7 @@ module Controllers
       
       # puts "#{@game_state_model::game_mode}"
       if @game_state_model::game_mode != :pvai
-        # @alert_view = Views::WaitingAlertView.new(@window, self)
+        # @alert_view = Views::WaitingAlertView.new(@window, self) FIXME: MOVE TO MENU
       else
         @alert_view = nil
       end
@@ -115,13 +115,26 @@ module Controllers
         end
       end
       if @game_state_model::game_mode != :pvai
-        toggle_multiplayer_controls
-        begin
-        # send_sync_message
-        # read_message
-        rescue
+        if @window.client_network_com != nil
+          @window.client_network_com.send_message(@window.client_network_com.create_message(:heartbeat))
+          data = @window.client_network_com.read_message
+          if data::header != :heartbeat
+            puts data::header
+            handle_data_packet(data)
+          end
         end
       end
+      toggle_multiplayer_controls
+      #   begin
+      #   send_sync_message
+      #   read_message
+      #   rescue
+      #   end
+      # end
+    end
+
+    def handle_data_packet(packet)
+
     end
 
     ##
@@ -243,11 +256,13 @@ module Controllers
       # puts "turn state: #{@game_state_model::player_turn_state}, player role: #{@game_state_model::player_role}"
       if (@game_state_model::player_turn_state != @game_state_model::player_role) 
         if (@view::control.control_disabled == false)
+          puts "disabling control on player"
           @view::control.disable_control_on_player
         end
       elsif (@game_state_model::player_turn_state == @game_state_model::player_role) 
         if (@view::control.control_disabled == true)
           @view::control.enable_control_on_player
+          puts "enabling control on player"
         else
           #puts "SIGH"
         end
