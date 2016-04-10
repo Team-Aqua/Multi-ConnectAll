@@ -109,6 +109,8 @@ class Server
                      player_1_score: 0,
                      player_2_score: 0,
                      saved_game: resultdata[4],
+                     game_type: resultdata[6],
+                     last_turn: resultdata[5],
                      tiles: [] }
               end
               if @players.size % 2 == 0
@@ -124,6 +126,8 @@ class Server
                                 @games[game][:player_2_color],
                                 @games[game][:player_1_score],
                                 @games[game][:player_2_score],
+                                @games[game][:game_type],
+                                @games[game][:last_turn],
                                 @games[game][:saved_game]].join('|')
                     socket.write(response)
                   end
@@ -142,6 +146,8 @@ class Server
                             @games[game][:player_2_color],
                             @games[game][:player_1_score],
                             @games[game][:player_2_score],
+                            @games[game][:game_type],
+                            @games[game][:last_turn],
                             @games[game][:saved_game]].join('|')
                 socket.write(response)
               else
@@ -185,7 +191,7 @@ class Server
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_win(data[1])
               elsif data[2] == 'otto'
-                 @db_ctrl.increment_otto_win(data[1])
+                 @db_ctrl.increment_otto_wins(data[1])
               end 
             when 'tie'
               puts "tie: #{data[1]} :: on #{data[2]}"
@@ -225,10 +231,10 @@ class Server
                 instantiate_game_action(entry, game, socket)
               end
             when 'save'
-              players = data[2]
-              realplayers = data[3]
-              grid = data[4]
-              player_turn_state = data[5]
+              # players = data[2]
+              # realplayers = data[3]
+              # grid = data[4]
+              # player_turn_state = data[5]
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
@@ -238,7 +244,7 @@ class Server
                 player = @games[game][:player_2]
               end
               entry = role + "%V%" + @games[game][:tiles].length.to_s
-              @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5], data[6], data[7]].join("|"))
+              @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5], data[6], data[7], data[8]].join("|"))
               if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end

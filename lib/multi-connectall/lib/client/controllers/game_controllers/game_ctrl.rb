@@ -210,16 +210,35 @@ module Controllers
           elsif data[0] == "loadsave"
             @data_loaded = true
             @alert_view = nil
-            grid = data[7]
+            grid = data[9]
             # puts "grid: #{grid}"
-            turn_state = data[6].to_i # dev just for show, grab from server later
+            turn_state = data[8].to_i # dev just for show, grab from server later
             # grab this grid later to gen
+            
             @game_state_model::players[0]::name = data[1]
             @game_state_model::players[1]::name = data[2]
             @game_state_model::players[0]::player_color = data[3]
             @game_state_model::players[1]::player_color = data[4]
-            puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]} | #{data[6]} | #{data[7]}"
-            puts "YOUR NAME: #{@game_state_model::name}"
+
+            if data[7] == 'classic'
+              @game_state_model::game_type = :classic
+            elsif data[7] == 'otto'
+              @game_state_model::game_type = :otto
+            end
+
+            if @game_state_model::game_type == :classic
+              @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
+            else
+              @game_state_model::game_mode_logic = GameLogic::OttoRules.new(@game_state_model)
+            end
+
+            @view::grid::model = @game_state_model
+            @view::header::game_state_model = @game_state_model
+
+            @view::header.set_tiles
+            @view::grid.set_tiles
+
+            # puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]} | #{data[6]} | #{data[7]} | #{data[8]} | #{data[9]} | #{data[10]}"
             if @game_state_model::name == @game_state_model::players[0]::name
               @game_state_model::player_role = 0
             elsif @game_state_model::name == @game_state_model::players[1]::name
@@ -388,7 +407,9 @@ module Controllers
       @game_won = true
       # @game_state_model.toggle_player_turn_state
       if (lost == 'self')
-        @window.client_network_com.send_loss
+        if @window.client_network_com != nil
+          @window.client_network_com.send_loss
+        end
         if (@game_state_model::player_role == 0)
           winner = 1
         else
@@ -396,7 +417,9 @@ module Controllers
         end
       else 
         winner = @game_state_model::player_role
-        @window.client_network_com.send_win
+        if @window.client_network_com != nil
+          @window.client_network_com.send_win
+        end
       end
       @alert_view = Views::WinAlertView.new(@window, self, @game_state_model::players[winner].player_color)
       @game_state_model::players[winner].increment_win_score
@@ -436,7 +459,7 @@ module Controllers
     end
 
     def save_game
-      write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::players[0].player_color, @game_state_model::players[1].player_color, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state].join('|'))
+      write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::players[0].player_color, @game_state_model::players[1].player_color, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state, @game_state_model::game_type].join('|'))
       # @game_state_model::grid.print_grid
       # write_message(['save', @game_state_model::player_role,].join('|'))
     end
@@ -449,9 +472,19 @@ module Controllers
       end
     end
 
+    def handle_quit
+      if @game_state_model::game_mode == :pvai
+        @window.close
+      else
+        quit_alert
+      end
+    end
+
     def force_quit
       concede_logic('self')
-      write_message(['concede', @game_state_model::player_role].join('|'))
+      if @window.client_network_com != nil
+        write_message(['concede', @game_state_model::player_role].join('|'))
+      end
       @window.close
     end
 

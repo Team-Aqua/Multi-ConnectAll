@@ -5,7 +5,7 @@ module Views
   # Acts as parent layer operations
 
   class GameView
-    attr_accessor :grid, :control
+    attr_accessor :grid, :control, :header, :game_state_model
     def initialize(window, controller, game_state_model)
       @window = window
       @controller = controller

@@ -1,6 +1,8 @@
 module Views
   class GameHeaderView
 
+    attr_accessor :game_state_model
+
     ##
     # GameHeaderView is the header interaction in-game. 
     # Is placed above the gameboard and records game players, 
@@ -59,7 +61,7 @@ module Views
 
       @font = Gosu::Font.new(@window, "assets/fonts/HN_Bd.ttf", 18)
       @question = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_question_light.png"), 295, 10, 35, lambda { @controller.question_button_click }, Gosu::Image.new("assets/images/btn_question_light_click.png"))
-      @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_light.png"), 315, 10, 35, lambda { @controller.quit_alert }, Gosu::Image.new("assets/images/btn_cancel_dark.png", :tileable => false))
+      @cancel = BtnItem.new(@window, Gosu::Image.new("assets/images/btn_cancel_light.png"), 315, 10, 35, lambda { @controller.handle_quit }, Gosu::Image.new("assets/images/btn_cancel_dark.png", :tileable => false))
       @ico_two = Gosu::Image.new("assets/images/ico_2.png")
       @ico_one = Gosu::Image.new("assets/images/ico_1.png")
       @ico_ai = Gosu::Image.new("assets/images/ico_ai.png")
@@ -83,9 +85,12 @@ module Views
     # Outputs: none
     
     def set_tiles
-      if @game_state_model::game_type == :classic
+      puts "#{@game_state_model::game_type}"
+      if @game_state_model::game_type == :classic || @game_state_model::game_type == 'classic'
+        puts "1"
         @tiles = @tilesClassic
-      elsif @game_state_model::game_type == :otto
+      elsif @game_state_model::game_type == :otto || @game_state_model::game_type == 'otto'
+        puts "2"
         @tiles = @tilesOtto
       end
     end
