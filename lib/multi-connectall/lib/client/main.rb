@@ -95,12 +95,12 @@ class GameWindow < Gosu::Window
     self.caption = "ConnectAll"
     @song = Gosu::Song.new(self, "assets/music/bitbop.mp3")
     @song.volume = 0.2
+    
     if @client_network_com == nil
       @client_network_com = nil
     end
-    #@song.play(true)
 
-    # Dev server interaction
+    @song.play(true)
     if model != nil
       @game_state_model = model
     else
@@ -109,7 +109,7 @@ class GameWindow < Gosu::Window
  
     @controllers = {  :menu => Controllers::MenuCtrl.new(self, @game_state_model),
                       :game => Controllers::GameCtrl.new(self, @game_state_model) }
-    #disabled for testing
+    
     @currentCtrl = @controllers[:menu]
 
     @fps_init = Time.now.to_f
