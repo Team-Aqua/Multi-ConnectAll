@@ -16,7 +16,7 @@ module Controllers
       
       # puts "#{@game_state_model::game_mode}"
       if @game_state_model::game_mode != :pvai
-        @alert_view = Views::WaitingAlertView.new(@window, self)
+        # @alert_view = Views::WaitingAlertView.new(@window, self)
       else
         @alert_view = nil
       end
