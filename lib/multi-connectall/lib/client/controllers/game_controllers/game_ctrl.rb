@@ -117,8 +117,8 @@ module Controllers
       if @game_state_model::game_mode != :pvai
         toggle_multiplayer_controls
         begin
-        send_sync_message
-        read_message
+        # send_sync_message
+        # read_message
         rescue
         end
       end
