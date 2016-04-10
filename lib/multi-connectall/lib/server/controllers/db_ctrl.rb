@@ -79,12 +79,13 @@ module Controllers
     def get_saved_game(playerName)
     	results = @database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
       total = ""
-      puts results
+      #puts results
       results.map do |row|
         reval = "#{row['gameState']}"
         total << reval
       end
-      delete_saved_game(playerName)
+      
+      # delete_saved_game(playerName) FIXME: implement this in production
       return total
     end
 

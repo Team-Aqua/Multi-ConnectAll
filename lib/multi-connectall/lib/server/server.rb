@@ -20,8 +20,10 @@ class Server
     puts "Starting Server at #{host}:#{port}."
     @server = TCPServer.new(host, port)
     @players = {}
+    @savedplayers = {}
     @games = {}
     @count = 1
+    @load_ready = false
 
     @db_ctrl = Controllers::DBCtrl.new(host, port)
     # @database = Mysql2::Client.new(:host => host, :port => port)
@@ -51,7 +53,7 @@ class Server
           case data[0]
             when 'load_stats'
               results = @db_ctrl.get_total_stats(data[1])
-              puts "results!: #{results}"
+              # puts "results!: #{results}"
               socket.write(results)
             when 'leaderboards'
               results_top = @db_ctrl.get_top_overall_players
@@ -71,11 +73,10 @@ class Server
               @players[user] = ["Temp", nil, "green"]
             when 'setup'
               @players[user] = [data[1], nil, data[2]]
-              # puts "playersize: #{@players.size}, player: #{@players[user]}, data: #{data[2]}"
               if @players.size % 2 == 0
                 @players.each do |player, data|
                   # puts "#{player} || #{data}"
-                  if player != user && data[1] == nil
+                  if player != user && data[1] == nil # is second player only
                     @games[@count] = { player_1: data[0],
                                        player_2: @players[user][0],
                                        player_1_color: data[2],
@@ -100,6 +101,76 @@ class Server
                 end
               else
                 socket.write("waiting")
+              end
+            when 'setup_save'
+              puts "yoko kano"
+              # puts "setupsave: data[1]: #{data[1]}"
+              @players[user] = [data[1], nil, nil]
+              results = @db_ctrl.get_saved_game(data[1])
+              puts results
+              if results != nil
+                resultdata = results.split("|") 
+                @games[@count] = { player_1: resultdata[0],
+                     player_2: resultdata[1],
+                     player_1_color: resultdata[2],
+                     player_2_color: resultdata[3],
+                     player_1_score: 0,
+                     player_2_score: 0,
+                     saved_game: resultdata[4],
+                     tiles: [] }
+              end
+              if @players.size % 2 == 0
+                @players.each do |player, data|
+                  # puts "#{player} || #{data}"
+                  if player != user && data[1] == nil
+                    # @games[@count] = { player_1: data[0],
+                    #                    player_2: @players[user][0],
+                    #                    player_1:_color: data[2],
+                    #                    player_2_color: @players[user][2],
+                    #                    player_1_score: 0,
+                    #                    player_2_score: 0,
+                    #                    tiles: [] }
+                    if @games[game][:player_1] == nil
+                      puts "continues"
+                      socket.write("waiting")
+                    else 
+                    puts "breaks @ #{@games[game][:player_1]}"
+                    @players[player][1] = @count
+                    @players[user][1] = @count
+                    game = @players[user][1]
+                      response = ["loadsave",
+                                  @games[game][:player_1],
+                                  @games[game][:player_2],
+                                  @games[game][:player_1_color],
+                                  @games[game][:player_2_color],
+                                  @games[game][:player_1_score],
+                                  @games[game][:player_2_score],
+                                  @games[game][:saved_game]].join('|')
+                      # puts "DATA: #{game} || #{}"
+                      # puts "WRITING: #{response}"
+                      socket.write(response)
+                    end
+                  end
+                end
+                @count += 1
+              else
+                socket.write("waiting")
+              end
+            when 'load_save'
+              if @players[user][1] != nil
+                game = @players[user][1]
+                response = ["loadsave",
+                            @games[game][:player_1],
+                            @games[game][:player_2],
+                            @games[game][:player_1_color],
+                            @games[game][:player_2_color],
+                            @games[game][:player_1_score],
+                            @games[game][:player_2_score],
+                            @games[game][:saved_game]].join('|')
+                socket.write(response)
+              else
+                response = "waiting"
+                socket.write(response)
               end
             when 'load'
               if @players[user][1] != nil
@@ -134,21 +205,21 @@ class Server
                 socket.write(response)
               end
             when 'win'
-              puts "win: #{data[1]} :: on #{data[2]}"
+              # puts "win: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_win(data[1])
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_win(data[1])
               end 
             when 'tie'
-              puts "tie: #{data[1]} :: on #{data[2]}"
+              # puts "tie: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_tie(data[1])
               elsif data[2] == 'otto'
                  @db_ctrl.increment_otto_tie(data[1])
               end 
             when 'loss'
-              puts "loss: #{data[1]} :: on #{data[2]}"
+              # puts "loss: #{data[1]} :: on #{data[2]}"
               if data[2] == 'classic'
                 @db_ctrl.increment_classic_loss(data[1])
               elsif data[2] == 'otto'
@@ -182,14 +253,7 @@ class Server
               if !@games[game][:tiles].include?("A%C%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%C%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
-            when 'loadsave'
-              #puts "saved: #{data[1]}"
-              result = @db_ctrl.get_saved_game(data[1])
-              #puts "result: #{result}"
-              socket.write(result)
             when 'save'
-              # data[1] holds player_role
-              puts "Self_name: #{data[1]}, p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
               players = data[2]
               realplayers = data[3]
               grid = data[4]
@@ -205,12 +269,11 @@ class Server
                 player @games[game][:player_2]
               end
               entry = role + "%V%" + @games[game][:tiles].length.to_s
-              @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5]].join("|"))
+              @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5], data[6], data[7]].join("|"))
               if !@games[game][:tiles].include?("A%V%" + @games[game][:tiles].length.to_s) && !@games[game][:tiles].include?("B%V%" + @games[game][:tiles].length.to_s)
                 instantiate_game_action(entry, game, socket)
               end
             when 'move'
-              puts "move activated!"
               move = data[2] #.to_i
               game = @players[user][1]
               puts "game: #{@players[user][0]}"

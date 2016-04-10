@@ -1,6 +1,6 @@
 module Controllers
   class GameCtrl
-    attr_accessor :view, :window, :game_state_model, :alert_view, :state, :data_loaded
+    attr_accessor :view, :window, :game_state_model, :alert_view, :state, :data_loaded, :data_saved
 
     ## 
     # Main controller for game interactions
@@ -27,26 +27,31 @@ module Controllers
       @skip_pos = 0
       @concede_run = false
       @concede_pos = 0
+      @data_saved = false
 
       GameControllerContracts.invariant(self)
     end
 
     def load_save
-      #puts "pname p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
-      write_message(['loadsave', @game_state_model.name].join('|'))
-      data = @window.client_network_com.read_message
-      puts data
-      data = data.split("|")
-      grid = data[2]
-      # puts "grid: #{grid}"
-      turn_state = data[3].to_i # dev just for show, grab from server later
-      # grab this grid later to gen
-      @game_state_model::players[0]::name = data[0]
-      @game_state_model::players[1]::name = data[1]
-      @game_state_model::grid.setGrid(reconstruct_grid(grid))
-      if turn_state == 1
-        @game_state_model.toggle_player_turn_state;
-      end
+      write_message(['setup_save', @game_state_model.name].join('|'))
+    #   #puts "pname p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
+    #   data = @window.client_network_com.read_message
+    #   puts data
+    #   data = data.split("|")
+    #   grid = data[4]
+    #   # puts "grid: #{grid}"
+    #   turn_state = data[5].to_i # dev just for show, grab from server later
+    #   # grab this grid later to gen
+    #   @game_state_model::players[0]::name = data[0]
+    #   @game_state_model::players[1]::name = data[1]
+    #   @game_state_model::players[0]::player_color = data[2]
+    #   @game_state_model::players[1]::player_color = data[3]
+    #   puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]}"
+    #   @game_state_model::grid.setGrid(reconstruct_grid(grid))
+    #   if turn_state == 1
+    #     @game_state_model.toggle_player_turn_state;
+    #   end
+    #   @data_loaded = true
     end
 
   def reconstruct_grid(gridipt)
@@ -154,8 +159,10 @@ module Controllers
     # For in-game - wait is required
 
     def send_sync_message
-      if @data_loaded == false 
+      if @data_loaded == false && @data_saved == false
         write_message('load')
+      elsif @data_loaded == false && @data_saved == true
+        write_message('load_save')
       else
         write_message('wait')
       end
@@ -217,6 +224,31 @@ module Controllers
                   move_block(self_proc: true)
                 end 
               end
+            end
+          elsif data[0] == "loadsave"
+            @data_loaded = true
+            @alert_view = nil
+            grid = data[7]
+            # puts "grid: #{grid}"
+            turn_state = data[6].to_i # dev just for show, grab from server later
+            # grab this grid later to gen
+            @game_state_model::players[0]::name = data[1]
+            @game_state_model::players[1]::name = data[2]
+            @game_state_model::players[0]::player_color = data[3]
+            @game_state_model::players[1]::player_color = data[4]
+            puts "structs: #{data[0]} | #{data[1]} | #{data[2]} | #{data[3]} | #{data[4]} | #{data[5]} | #{data[6]} | #{data[7]}"
+            puts "YOUR NAME: #{@game_state_model::name}"
+            if @game_state_model::name == @game_state_model::players[0]::name
+              @game_state_model::player_role = 0
+            elsif @game_state_model::name == @game_state_model::players[1]::name
+              @game_state_model::player_role = 1
+            else 
+              puts "Player queued incorrectly."
+              window.close
+            end
+            @game_state_model::grid.setGrid(reconstruct_grid(grid))
+            if turn_state == 1
+              @game_state_model.toggle_player_turn_state;
             end
           elsif data[0] == "load"
             @data_loaded = true
@@ -422,7 +454,7 @@ module Controllers
     end
 
     def save_game
-      write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state].join('|'))
+      write_message(['save', @game_state_model::name, @game_state_model::players[0].name, @game_state_model::players[1].name, @game_state_model::players[0].player_color, @game_state_model::players[1].player_color, @game_state_model::grid.getGrid.join('&'), @game_state_model::player_turn_state].join('|'))
       # @game_state_model::grid.print_grid
       # write_message(['save', @game_state_model::player_role,].join('|'))
     end

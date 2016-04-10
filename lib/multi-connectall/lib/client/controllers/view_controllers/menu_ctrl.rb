@@ -264,14 +264,12 @@ module Controllers
 
     def load_saved_game
       # dev code to setup game mode
-      ai_level = Models::AILevel.new 
-      ai_level.level = 7
-      @game_state_model::game_mode = :pvai
-      @game_state_model::num_of_players = 1
-      @game_state_model::game_type = :classic
+      @game_state_model::game_mode = :pvp
+      @game_state_model::num_of_players = 2
+      @game_state_model::game_type = :classic # change this to include otto once called
       @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
-      @game_state_model::players.push(Models::RealPlayer.new(1, 'green', "Demo"))
-      @game_state_model::players.push(Models::AIPlayer.new(2, 'black', GameLogic::ClassicAI.new(@game_state_model, ai_level), "Roboto"))
+      @game_state_model::players.push(Models::RealPlayer.new(1, 'green', @game_state_model::name))
+      @game_state_model::players.push(Models::RealPlayer.new(2, 'black', "Player 2"))
       @window.load_game
     end
 

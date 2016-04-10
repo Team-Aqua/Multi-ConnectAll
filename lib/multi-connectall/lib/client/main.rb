@@ -164,10 +164,12 @@ class GameWindow < Gosu::Window
   end
 
   def load_game
+    @client_network_com.send_message(['setup_save', @game_state_model::players[@game_state_model::player_role]::name].join('|'))
     @controllers[:game]::view::grid.set_tiles
     initialize(568, 343, model: @game_state_model)
     @currentCtrl = @controllers[:game]
-    @currentCtrl.load_save
+    @currentCtrl.data_saved = true
+    # @currentCtrl.load_save
   end
 
   ## 
@@ -177,14 +179,10 @@ class GameWindow < Gosu::Window
   # Outputs: none
 
   def start_game
-    # Dev server interaction
-    # FIXME: Shift this to 'login to server' interaction
-    # 
     @client_network_com.send_message(['setup', @game_state_model::players[@game_state_model::player_role]::name, @game_state_model::players[@game_state_model::player_role].player_color].join('|'))
     @controllers[:game]::view::grid.set_tiles
     initialize(568, 343, model: @game_state_model)
     @currentCtrl = @controllers[:game]
-
   end
 
   ##
