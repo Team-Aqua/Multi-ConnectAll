@@ -5,7 +5,8 @@ module Models
     # Generic game state model for game processes.
     # Holds data for game
 
-    attr_accessor :name, :state, :player_turn_state, :grid, :players, :game_mode, :game_type, :num_of_players, :game_mode_logic, :winner, :ai, :num_of_rl_players, :player_role, :turn_count
+    attr_accessor :name, :state, :player_turn_state, :grid, :players, :game_mode, :game_type, :num_of_players,
+    :game_mode_logic, :winner, :ai, :num_of_rl_players, :player_role, :turn_count, :current_universal_game_state_model
 
     def initialize()
       @state = :active
@@ -21,6 +22,17 @@ module Models
       @ai = nil
       @turn_count = 0
       @name = nil # FIXME: CHANGE THIS LATER // reassoc. to player
+
+      @last_move = nil
+
+      @current_universal_game_state_model = nil
+    end
+
+    def generate_universal_game_state
+      model = Models::UniversalGameStateModel.new
+      model.grid = @grid
+      model.last_move = @last_move
+      return model
     end
 
     ##

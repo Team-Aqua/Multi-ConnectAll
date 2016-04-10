@@ -5,7 +5,7 @@ module Models
     # Model for player
 
     include AbstractInterface
-    attr_accessor :player_num, :player_color, :player_type, :score, :set_move, :make_move, :name, :ai
+    attr_accessor :player_num, :player_color, :player_type, :score, :set_move, :make_move, :name, :ai, :move
 
     def initialize(player_num, player_color, name)
       @player_num  = player_num

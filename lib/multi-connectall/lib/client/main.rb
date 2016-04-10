@@ -2,11 +2,12 @@
 require 'celluloid/io'
 require 'socket'
 require 'randexp'
+require 'yaml'
 require 'mysql'
 require 'mysql2'
-
 # Standard games import
 require 'gosu'
+
 
 
 require_relative '../shared/universal_game_state_model'

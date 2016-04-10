@@ -37,6 +37,14 @@ module Controllers
       if @alert_view != nil
         @alert_view.update
       end
+      if @window.client_network_com != nil
+        @window.client_network_com.send_message(@window.client_network_com.create_message(:heartbeat))
+        data = @window.client_network_com.read_message
+        if data::header != :heartbeat
+          puts data::header
+          handle_data_packet(data)
+        end
+      end
     end
 
     ##
@@ -61,6 +69,16 @@ module Controllers
       MenuControllerContracts.invariant(self)
       @current_view.button_down(key)
       MenuControllerContracts.invariant(self)
+    end
+
+    def handle_data_packet(packet)
+      if packet::header == :initialze
+        @game_state_model::player_role = packet::data::assigned_role
+        alert_close
+        to_classic_multiplayer_menu
+      end
+
+
     end
 
     ## 
@@ -127,7 +145,7 @@ module Controllers
       @game_state_model::name = name  
       if @window.client_network_com == nil
         @window.client_network_com = Controllers::NetworkCommunicationCtrl.new(server, port.to_i, @window)
-        @window.client_network_com.init_login(name)
+        @window.client_network_com.login
       end
       to_type_menu
     end
@@ -278,23 +296,11 @@ module Controllers
     def to_classic_queue
       @window.client_network_com.join_queue('classic')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
-      if data = @window.client_network_com.read_message 
-        if data == 'ready'
-          alert_close
-          to_classic_multiplayer_menu
-        end
-      end
     end
 
     def to_otto_queue
       @window.client_network_com.join_queue('otto')
       @alert_view = @help_view = Views::WaitingMenuAlertView.new(@window, self)
-      if data = @window.client_network_com.read_message 
-        if data == 'ready'
-          alert_close
-          to_otto_multiplayer_menu
-        end
-      end
     end
 
     def to_classic_multiplayer_menu
@@ -303,7 +309,7 @@ module Controllers
       @game_state_model::game_mode = :pvp
       @game_state_model::num_of_players = 2
       @game_state_model::game_mode_logic = GameLogic::ClassicRules.new(@game_state_model)
-      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
+      # @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
       @current_view = Views::MultiplayerMenuView.new(@window, self, @game_state_model)
       MenuControllerContracts.invariant(self)
     end
@@ -314,7 +320,7 @@ module Controllers
       @game_state_model::game_mode = :pvp
       @game_state_model::num_of_players = 2
       @game_state_model::game_mode_logic = GameLogic::OttoRules.new(@game_state_model)
-      @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
+      # @window.client_network_com.join_game #FIXME: Should probably move this logic to a ctrl instead of being in a view
       @current_view = Views::MultiplayerMenuView.new(@window, self, @game_state_model)
       MenuControllerContracts.invariant(self)
     end
