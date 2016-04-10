@@ -10,8 +10,6 @@ require 'celluloid/autostart'
 require 'Mysql2'
 require 'mysql'
 
-require_relative 'server_helpers'
-
 class Server
   include Celluloid::IO
   finalizer :shutdown
@@ -208,7 +206,6 @@ class Server
                  @db_ctrl.increment_otto_loss(data[1])
               end 
             when 'skip'
-              # data[1] holds player_role
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
@@ -231,10 +228,6 @@ class Server
                 instantiate_game_action(entry, game, socket)
               end
             when 'save'
-              # players = data[2]
-              # realplayers = data[3]
-              # grid = data[4]
-              # player_turn_state = data[5]
               game = @players[user][1]
               if @games[game][:player_1] == @players[user][0]
                 role = "A"
