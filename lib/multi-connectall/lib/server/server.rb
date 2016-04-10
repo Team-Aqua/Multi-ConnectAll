@@ -189,7 +189,7 @@ class Server
               socket.write(result)
             when 'save'
               # data[1] holds player_role
-              puts "Self_name: #{data[1]}, p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
+              # puts "Self_name: #{data[1]}, p1_name: #{data[2]}, p2_name: #{data[3]}, grid: #{data[4]}, turn_state: #{data[5]}"
               players = data[2]
               realplayers = data[3]
               grid = data[4]
@@ -202,7 +202,7 @@ class Server
                 player = @games[game][:player_1]
               else
                 role = "B"
-                player @games[game][:player_2]
+                player = @games[game][:player_2]
               end
               entry = role + "%V%" + @games[game][:tiles].length.to_s
               @db_ctrl.insert_saved_game(player, [data[2], data[3], data[4], data[5]].join("|"))
