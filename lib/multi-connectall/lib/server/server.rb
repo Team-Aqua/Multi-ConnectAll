@@ -71,7 +71,7 @@ class Server
 
 
   def handle_otto_queue()
-    if @server_model::queues[:otto].size > 2
+    if @server_model::queues[:otto].size >= 2
       # create_match
       player1 = @server_model::queues[:otto].pop
       player2 = @server_model::queues[:otto].pop
