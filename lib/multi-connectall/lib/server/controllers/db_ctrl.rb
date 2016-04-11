@@ -9,6 +9,7 @@ module Controllers
     end
 
     def create_tables
+      DBContracts.invariant(@database)
       @database.query("CREATE TABLE IF NOT EXISTS users (
       	playerName VARCHAR(50) NOT NULL, 
       	classicWins INTEGER DEFAULT 0, 
@@ -22,58 +23,84 @@ module Controllers
       	playerName VARCHAR(50) NOT NULL, 
       	gameState VARCHAR(2048), 
       	UNIQUE (playerName))")
+      DBContracts.invariant(@database)
     end
     
     def drop_tables
+      DBContracts.invariant(@database)
       @database.query("DROP TABLE IF EXISTS users")
       @database.query("DROP TABLE IF EXISTS savedGames")
+      DBContracts.invariant(@database)
     end
     
     def insert_user_row(playerName)
+      DBContracts.invariant(@database)
     	@database.query("INSERT INTO users (playerName) VALUES ('#{playerName}')")
+      DBContracts.invariant(@database)
     end
 
     def insert_user_row_ignore(playerName)
+      DBContracts.invariant(@database)
       @database.query("INSERT IGNORE INTO users (playerName) VALUES ('#{playerName}')")
+      DBContracts.invariant(@database)
     end
 
     def increment_classic_win(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET classicWins = classicWins + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def increment_classic_loss(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET classicLoses = classicLoses + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def increment_classic_ties(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET classicTies = classicTies + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def increment_otto_wins(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET ottoWins = ottoWins + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def increment_otto_loss(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET ottoLoses = ottoLoses + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def increment_otto_ties(playerName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET ottoTies = classicWins + 1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def return_all_users
+      DBContracts.invariant(@database)
       @database.query("SELECT * FROM users")
+      DBContracts.invariant(@database)
     end
 
     def update_user_row(playerName, fieldName)
+      DBContracts.invariant(@database)
       @database.query("UPDATE users SET #{fieldName} = #{fieldName}+1 WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def insert_saved_game(playerName, gameState)
+      DBContracts.invariant(@database)
     	@database.query("INSERT INTO savedGames (playerName, gameState) VALUES ('#{playerName}', '#{gameState}')")
+      DBContracts.invariant(@database)
     end
 
     def get_saved_game(playerName)
+      DBContracts.invariant(@database)
     	results = @database.query("SELECT gameState FROM savedGames WHERE playerName = '#{playerName}'")
       total = ""
       results.map do |row|
@@ -85,10 +112,13 @@ module Controllers
     end
 
     def delete_saved_game(playerName)
+      DBContracts.invariant(@database)
     	@database.query("DELETE FROM savedGames WHERE playerName = '#{playerName}'")
+      DBContracts.invariant(@database)
     end
 
     def get_total_stats(playerName)
+      DBContracts.invariant(@database)
       results = @database.query("SELECT classicWins + ottoWins as wins, classicLoses + ottoLoses as loses, classicTies + ottoTies as ties FROM users WHERE playerName = '#{playerName}'")
       total = ""
       results.map do |row|
@@ -99,6 +129,7 @@ module Controllers
     end
 
     def get_top_classic_players
+      DBContracts.invariant(@database)
     	results = @database.query("SELECT playerName, classicWins AS wins, classicLoses AS loses, classicTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies DESC LIMIT 5")
       total = ""
       results.map do |row|
@@ -109,6 +140,7 @@ module Controllers
     end
 
     def get_top_otto_players
+      DBContracts.invariant(@database)
 			results = @database.query("SELECT playerName, ottoWins AS wins, ottoLoses AS loses, ottoTies AS ties FROM users ORDER BY ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
       total = ""
       results.map do |row|
@@ -119,6 +151,7 @@ module Controllers
     end
 
     def get_top_overall_players
+      DBContracts.invariant(@database)
     	results = @database.query("SELECT playerName, classicWins + ottoWins AS wins, classicLoses + ottoLoses AS loses, classicTies + ottoTies AS ties FROM users ORDER BY classicWins - classicLoses + classicTies + ottoWins - ottoLoses + ottoTies DESC LIMIT 5")
       total = ""
       results.map do |row|

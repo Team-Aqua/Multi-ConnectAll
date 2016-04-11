@@ -5,9 +5,8 @@ module ClientContracts
     end
   end
 
-  def self.invariant
-    # ensure that the socket is never nil
-    # can be used for send/read message as well
+  def self.invariant(socket)
+    if socket == nil then raise ClientContractError.new("No socket found") end
   end
 
 end

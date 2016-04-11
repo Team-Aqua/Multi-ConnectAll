@@ -75,6 +75,7 @@ require_relative 'contracts/main_controller_contracts'
 require_relative 'contracts/menu_controller_contracts'
 require_relative 'contracts/player_model_contracts'
 require_relative 'contracts/rules_contracts'
+require_relative 'contracts/client_contracts'
 
 # Server interactions dev
 
@@ -95,7 +96,7 @@ class GameWindow < Gosu::Window
     self.caption = "ConnectAll"
     @song = Gosu::Song.new(self, "assets/music/bitbop.mp3")
     @song.volume = 0.2
-    
+
     if @client_network_com == nil
       @client_network_com = nil
     end

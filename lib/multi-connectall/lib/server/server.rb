@@ -1,6 +1,10 @@
 require_relative 'controllers/db_ctrl'
 require_relative 'models/server_model'
 
+require_relative '../ancillaries/m_contract_error'
+require_relative 'contracts/server_contracts'
+require_relative 'contracts/db_contracts'
+
 require 'celluloid/io'
 require 'celluloid/autostart'
 require 'Mysql2'
@@ -11,6 +15,7 @@ class Server
   finalizer :shutdown
 
   def initialize(host, port)
+    ServerContracts.pre_initialise(host, port)
     puts "Starting Server at #{host}:#{port}."
     @server = TCPServer.new(host, port)
     @players = {}
@@ -18,6 +23,7 @@ class Server
     @games = {}
     @count = 1
     @db_ctrl = Controllers::DBCtrl.new(host, port)
+    ServerContracts.post_initialise(@server)
     async.run
   end
 
@@ -26,6 +32,7 @@ class Server
   # Server shutdown process
 
   def shutdown
+    ServerContracts.pre_shutdown(@server)
     @server.close if @server
   end
 
@@ -38,6 +45,7 @@ class Server
   end
 
   def handle_connection(socket)
+    ServerContracts.pre_handle_connection(socket, @server)
     _, port, host = socket.peeraddr
     user = "#{host}:#{port}"
     puts "#{user} has joined the server."
