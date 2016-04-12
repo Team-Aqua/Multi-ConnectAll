@@ -1,6 +1,7 @@
 module Models
   class AILevel
     attr_accessor :level
+    
     ## 
     # Identifies AI level
 

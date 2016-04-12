@@ -14,8 +14,8 @@ module GameLogic
     end
 
     ## 
-    # Checks if player has won for any vertical
-    # Inputs: none
+    # Checks f player has won for any vertical
+    # Inputs: inone
     # Outputs: boolean
 
     def check_vertical

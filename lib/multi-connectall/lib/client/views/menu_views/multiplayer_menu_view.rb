@@ -9,7 +9,6 @@ module Views
     ##
     # Multiplayer functionality: on load,
     # this page sets up the multiplayer
-    # Dev: needs to be able to 'drop' player if they exit this screen
 
     def initialize(window, controller, game_state_model)
       @window = window

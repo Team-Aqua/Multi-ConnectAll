@@ -85,12 +85,9 @@ module Views
     # Outputs: none
     
     def set_tiles
-      puts "#{@game_state_model::game_type}"
       if @game_state_model::game_type == :classic || @game_state_model::game_type == 'classic'
-        puts "1"
         @tiles = @tilesClassic
       elsif @game_state_model::game_type == :otto || @game_state_model::game_type == 'otto'
-        puts "2"
         @tiles = @tilesOtto
       end
     end
